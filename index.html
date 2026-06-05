@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WeatherAI – ML Prediction Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #1a1a2e;
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+
+/* sidebar */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 220px;
+  background: #16213e;
+  border-right: 2px solid #0f3460;
+  padding: 20px 0;
+  z-index: 100;
+}
+
+.logo {
+  padding: 10px 20px 20px 20px;
+  border-bottom: 1px solid #0f3460;
+  margin-bottom: 10px;
+}
+
+.logo h1 {
+  font-size: 18px;
+  color: #4fc3f7;
+}
+
+.logo p {
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.nav-section {
+  padding: 12px 20px 5px;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #666;
+  letter-spacing: 1px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  color: #aaa;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+  background: #0f3460;
+  color: white;
+}
+
+.nav-item.active {
+  background: #0f3460;
+  color: #4fc3f7;
+  border-left: 3px solid #4fc3f7;
+}
+
+.nav-item .icon {
+  font-size: 16px;
+}
+
+.nav-badge {
+  margin-left: auto;
+  background: #1b5e20;
+  color: #69f0ae;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+/* main content */
+.main {
+  margin-left: 220px;
+  padding: 25px;
+  min-height: 100vh;
+}
+
+.page { display: none; }
+.page.active { display: block; }
+
+/* top bar */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.topbar h2 {
+  font-size: 22px;
+  font-weight: bold;
+  color: #e0e0e0;
+}
+
+.topbar p {
+  font-size: 13px;
+  color: #888;
+  margin-top: 3px;
+}
+
+/* stat cards */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.stat-card:hover {
+  border-color: #4fc3f7;
+}
+
+.stat-icon { font-size: 22px; margin-bottom: 8px; }
+
+.stat-label {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: bold;
+  margin-top: 5px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.stat-card.blue .stat-value { color: #4fc3f7; }
+.stat-card.green .stat-value { color: #69f0ae; }
+.stat-card.amber .stat-value { color: #ffca28; }
+.stat-card.purple .stat-value { color: #ce93d8; }
+
+.stat-sub { font-size: 12px; color: #777; margin-top: 4px; }
+
+/* chart cards */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.charts-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.chart-card {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.chart-title { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+.chart-sub { font-size: 12px; color: #888; margin-bottom: 14px; }
+
+/* buttons */
+.btn {
+  padding: 9px 16px;
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+}
+
+.btn-sky { background-color: #0288d1; color: white; }
+.btn-sky:hover { background-color: #0277bd; }
+.btn-green { background-color: #2e7d32; color: white; }
+.btn-green:hover { background-color: #1b5e20; }
+.btn-purple { background-color: #6a1b9a; color: white; }
+.btn-purple:hover { background-color: #4a148c; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+/* form stuff */
+.form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group label {
+  font-size: 11px;
+  color: #aaa;
+  text-transform: uppercase;
+}
+
+.form-group select,
+.form-group input {
+  padding: 9px 12px;
+  background: #0f3460;
+  border: 1px solid #1565c0;
+  border-radius: 5px;
+  color: #e0e0e0;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  outline: none;
+  min-width: 150px;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+  border-color: #4fc3f7;
+}
+
+/* prediction cards */
+.pred-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.pred-card {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pred-label { font-size: 11px; color: #888; text-transform: uppercase; }
+.pred-icon { font-size: 20px; }
+.pred-val { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: bold; color: #4fc3f7; }
+.pred-unit { font-size: 12px; color: #777; }
+.pred-current { font-size: 12px; color: #666; margin-top: 2px; }
+
+/* table stuff */
+.rmse-section {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.rmse-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #0f3460;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-wrap { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; }
+
+thead th {
+  background: #0f3460;
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #aaa;
+  white-space: nowrap;
+}
+
+tbody tr { border-bottom: 1px solid #0f3460; }
+tbody tr:hover { background: rgba(79, 195, 247, 0.05); }
+tbody td { padding: 11px 14px; font-size: 13px; }
+
+.best { color: #69f0ae; font-weight: bold; }
+.mid { color: #ffca28; }
+.worst { color: #ef5350; }
+
+/* forecast scroll */
+.forecast-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  margin-bottom: 18px;
+}
+
+.fc-card {
+  min-width: 90px;
+  background: #0f3460;
+  border: 1px solid #1565c0;
+  border-radius: 8px;
+  padding: 12px 8px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.fc-date { font-size: 11px; color: #888; margin-bottom: 5px; }
+.fc-icon { font-size: 24px; margin-bottom: 5px; }
+.fc-tmax { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: bold; color: #ffca28; }
+.fc-tmin { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #4fc3f7; margin-top: 2px; }
+.fc-hum { font-size: 11px; color: #888; margin-top: 4px; }
+
+/* weather card */
+.weather-main-card {
+  background: #0d47a1;
+  border-radius: 10px;
+  padding: 22px;
+  display: none;
+  margin-bottom: 18px;
+}
+
+.weather-main-card.show {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.w-city { font-size: 26px; font-weight: bold; }
+.w-country { font-size: 13px; color: #bbdefb; margin-top: 2px; }
+.w-desc { font-size: 14px; color: #bbdefb; margin-top: 5px; text-transform: capitalize; }
+.w-temp { font-family: 'JetBrains Mono', monospace; font-size: 48px; font-weight: bold; }
+.w-feels { font-size: 13px; color: #bbdefb; margin-top: 4px; }
+
+/* model badges */
+.model-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-left: 8px;
+}
+
+.model-rf { background: #1b5e20; color: #69f0ae; }
+.model-xgb { background: #f57f17; color: #fff; }
+.model-lr { background: #4a148c; color: #ce93d8; }
+
+/* error and misc */
+.error-msg {
+  background: rgba(239, 83, 80, 0.15);
+  border: 1px solid #c62828;
+  color: #ef5350;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 13px;
+  margin-top: 10px;
+  display: none;
+}
+
+.error-msg.show { display: block; }
+
+.loader {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 2px solid #333;
+  border-top-color: #4fc3f7;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+.loading-overlay {
+  text-align: center;
+  padding: 35px;
+  color: #777;
+  font-size: 13px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up { animation: fadeUp 0.4s ease forwards; }
+
+.info-box {
+  background: rgba(79, 195, 247, 0.08);
+  border: 1px solid rgba(79, 195, 247, 0.25);
+  border-radius: 6px;
+  padding: 12px 15px;
+  font-size: 13px;
+  color: #4fc3f7;
+  margin-bottom: 16px;
+}
+
+.divider { height: 1px; background: #0f3460; margin: 18px 0; }
+
+.section-label {
+  font-size: 11px;
+  font-weight: bold;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+/* tabs */
+.tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+
+.tab {
+  padding: 7px 14px;
+  border-radius: 5px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #888;
+  border: 1px solid transparent;
+}
+
+.tab.active {
+  background: #0f3460;
+  color: #4fc3f7;
+  border-color: #1565c0;
+}
+
+.tab:hover:not(.active) { background: #0f3460; color: #ccc; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* badges */
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.badge-hot { background: rgba(255, 202, 40, 0.15); color: #ffca28; }
+.badge-warm { background: rgba(105, 240, 174, 0.15); color: #69f0ae; }
+.badge-cool { background: rgba(79, 195, 247, 0.15); color: #4fc3f7; }
+.badge-cold { background: rgba(206, 147, 216, 0.15); color: #ce93d8; }
+
+.cond-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  background: #0f3460;
+  color: #aaa;
+}
+
+@media(max-width: 900px) {
+  .sidebar { width: 55px; }
+  .sidebar .logo p,
+  .sidebar .nav-item span,
+  .sidebar .nav-section,
+  .sidebar .nav-badge { display: none; }
+  .main { margin-left: 55px; padding: 15px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid { grid-template-columns: 1fr; }
+  .pred-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="logo">
+    <h1>🌦️ WeatherAI</h1>
+    <p>ML Prediction Dashboard</p>
+  </div>
+
+  <div class="nav-section">Overview</div>
+  <div class="nav-item active" onclick="showPage('dashboard',this)">
+    <span class="icon">📊</span><span>Dashboard</span>
+  </div>
+  <div class="nav-item" onclick="showPage('realweather',this)">
+    <span class="icon">🌍</span><span>Real Weather</span>
+  </div>
+
+  <div class="nav-section">ML Models</div>
+  <div class="nav-item" onclick="showPage('mlpredict',this)">
+    <span class="icon">🤖</span><span>ML Prediction</span>
+    <span class="nav-badge">NEW</span>
+  </div>
+  <div class="nav-item" onclick="showPage('mlforecast',this)">
+    <span class="icon">📅</span><span>15-Day ML Forecast</span>
+    <span class="nav-badge">NEW</span>
+  </div>
+  <div class="nav-item" onclick="showPage('rmse',this)">
+    <span class="icon">📈</span><span>RMSE Comparison</span>
+    <span class="nav-badge">NEW</span>
+  </div>
+
+  <div class="nav-section">Data</div>
+  <div class="nav-item" onclick="showPage('states',this)">
+    <span class="icon">🗺️</span><span>All States</span>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="topbar">
+    <div><h2>Dashboard Overview</h2><p>Live weather analytics across India</p></div>
+    <button class="btn btn-sky" onclick="loadDashboard()">🔄 Refresh</button>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card blue"><div class="stat-icon">🌡️</div><div class="stat-label">Avg Temperature</div><div class="stat-value" id="statAvgTemp">--</div><div class="stat-sub">Across all cities</div></div>
+    <div class="stat-card green"><div class="stat-icon">🔥</div><div class="stat-label">Hottest City</div><div class="stat-value" id="statMaxTemp">--</div><div class="stat-sub" id="statMaxState">--</div></div>
+    <div class="stat-card amber"><div class="stat-icon">❄️</div><div class="stat-label">Coldest City</div><div class="stat-value" id="statMinTemp">--</div><div class="stat-sub" id="statMinState">--</div></div>
+    <div class="stat-card purple"><div class="stat-icon">💧</div><div class="stat-label">Avg Humidity</div><div class="stat-value" id="statAvgHum">--</div><div class="stat-sub">Across all cities</div></div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">🌡️ Temperature by City</div>
+      <div class="chart-sub">Live readings (°C)</div>
+      <div style="height:270px;"><canvas id="chartStateTemp"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🌤️ Weather Conditions</div>
+      <div class="chart-sub">Distribution across cities</div>
+      <div style="height:270px;"><canvas id="chartConditions"></canvas></div>
+    </div>
+  </div>
+  <div class="charts-grid-3">
+    <div class="chart-card">
+      <div class="chart-title">💧 Humidity Distribution</div>
+      <div class="chart-sub">Ranges across cities</div>
+      <div style="height:210px;"><canvas id="chartHumidity"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">💨 Wind Speed Distribution</div>
+      <div class="chart-sub">Ranges across cities</div>
+      <div style="height:210px;"><canvas id="chartWind"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🌡️ Temp vs Humidity</div>
+      <div class="chart-sub">Correlation scatter</div>
+      <div style="height:210px;"><canvas id="chartScatter"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WEATHER -->
+<div class="page" id="page-realweather">
+  <div class="topbar"><div><h2>Real-Time Weather</h2><p>Live data via OpenWeatherMap</p></div></div>
+  <div class="form-row">
+    <div class="form-group" style="flex:1">
+      <input type="text" id="cityInput" placeholder="🔍 Enter city (e.g. Hyderabad, Mumbai...)" onkeydown="if(event.key==='Enter')getWeather()">
+    </div>
+    <button class="btn btn-sky" onclick="getWeather()">Search</button>
+    <button class="btn btn-purple" onclick="autoDetect()">📍 My Location</button>
+  </div>
+  <div class="weather-main-card" id="weatherMainCard">
+    <div><div class="w-city" id="wCity">--</div><div class="w-country" id="wCountry">--</div><div class="w-desc" id="wDesc">--</div></div>
+    <div style="text-align:right;"><div id="wIcon" style="font-size:3rem;">🌤️</div><div class="w-temp" id="wTemp">--°C</div><div class="w-feels" id="wFeels"></div></div>
+  </div>
+  <div id="weatherDetails" style="display:none;">
+    <div class="pred-grid">
+      <div class="pred-card"><div class="pred-icon">💧</div><div class="pred-label">Humidity</div><div class="pred-val" id="wHum">--</div><div class="pred-unit">%</div></div>
+      <div class="pred-card"><div class="pred-icon">💨</div><div class="pred-label">Wind Speed</div><div class="pred-val" id="wWind">--</div><div class="pred-unit">km/h</div></div>
+      <div class="pred-card"><div class="pred-icon">🌡️</div><div class="pred-label">Min / Max</div><div class="pred-val" id="wMinMax">--</div><div class="pred-unit">°C</div></div>
+    </div>
+  </div>
+  <div class="chart-card" id="forecastSection" style="display:none;">
+    <div class="chart-title">📅 5-Day Forecast</div>
+    <div class="chart-sub">OpenWeatherMap 5-day data</div>
+    <div id="realForecastCards" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;"></div>
+    <div style="height:180px;"><canvas id="chartRealForecast"></canvas></div>
+  </div>
+  <div class="error-msg" id="weatherError"></div>
+</div>
+
+<!-- ML PREDICTION -->
+<div class="page" id="page-mlpredict">
+  <div class="topbar">
+    <div><h2>🤖 ML Next-Day Prediction</h2><p>Random Forest & XGBoost trained on Indian city historical data (2009–2020)</p></div>
+  </div>
+  <div class="info-box">
+    🔬 Models trained on 10-day lag sequences. Predictions use live current weather as input seed + ML models for next-day forecast.
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>City</label>
+      <select id="mlCity">
+        <option>Hyderabad</option><option>Mumbai</option><option>Delhi</option>
+        <option>Bangalore</option><option>Chennai</option><option>Kolkata</option>
+        <option>Pune</option><option>Ahmedabad</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Model</label>
+      <select id="mlModel">
+        <option value="Random Forest">🌲 Random Forest</option>
+        <option value="XGBoost">⚡ XGBoost</option>
+        <option value="Linear Regression">📐 Linear Regression</option>
+      </select>
+    </div>
+    <button class="btn btn-green" onclick="runMLPredict()" style="align-self:flex-end;">🔮 Predict</button>
+  </div>
+
+  <div id="mlPredResults" style="display:none;" class="fade-up">
+    <div class="section-label">📊 Current Live Weather</div>
+    <div class="pred-grid" id="mlCurrentGrid"></div>
+    <div class="divider"></div>
+    <div class="section-label">🔮 Next-Day Predictions <span id="mlModelBadge"></span></div>
+    <div class="pred-grid" id="mlPredGrid"></div>
+    <div class="chart-card">
+      <div class="chart-title">📊 Current vs Predicted Comparison</div>
+      <div class="chart-sub">Side-by-side bar chart for all weather parameters</div>
+      <div style="height:260px;"><canvas id="chartMLCompare"></canvas></div>
+    </div>
+  </div>
+  <div class="error-msg" id="mlError"></div>
+</div>
+
+<!-- 15-DAY ML FORECAST -->
+<div class="page" id="page-mlforecast">
+  <div class="topbar">
+    <div><h2>📅 15-Day ML Forecast</h2><p>Iterative ML predictions rolling forward day by day</p></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>City</label>
+      <select id="fcCity">
+        <option>Hyderabad</option><option>Mumbai</option><option>Delhi</option>
+        <option>Bangalore</option><option>Chennai</option><option>Kolkata</option>
+        <option>Pune</option><option>Ahmedabad</option>
+      </select>
+    </div>
+    <button class="btn btn-sky" onclick="runMLForecast()" style="align-self:flex-end;">📅 Generate Forecast</button>
+  </div>
+
+  <div id="fcResults" style="display:none;" class="fade-up">
+    <div class="section-label">15-Day Rolling Forecast</div>
+    <div class="forecast-scroll" id="fcCards"></div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">🌡️ Temperature Forecast (Max / Min)</div>
+        <div class="chart-sub">15-day predicted tmax & tmin</div>
+        <div style="height:250px;"><canvas id="chartFcTemp"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">💧 Humidity & Precipitation</div>
+        <div class="chart-sub">15-day predicted values</div>
+        <div style="height:250px;"><canvas id="chartFcHum"></canvas></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">💨 Wind Speed & Pressure</div>
+      <div class="chart-sub">15-day forecast</div>
+      <div style="height:200px;"><canvas id="chartFcWind"></canvas></div>
+    </div>
+  </div>
+  <div class="error-msg" id="fcError"></div>
+</div>
+
+<!-- RMSE COMPARISON -->
+<div class="page" id="page-rmse">
+  <div class="topbar">
+    <div><h2>📈 Model RMSE Comparison</h2><p>Benchmarking Random Forest vs XGBoost vs Linear Regression per city</p></div>
+    <button class="btn btn-sky btn-sm" onclick="loadRMSE()">🔄 Load</button>
+  </div>
+  <div class="info-box">
+    📊 RMSE values for all models across 8 Indian cities, trained on 80/20 chronological split of historical data (2009–2020).
+  </div>
+
+  <div class="charts-grid" style="margin-bottom:20px;">
+    <div class="chart-card">
+      <div class="chart-title">📊 Avg RMSE by City</div>
+      <div class="chart-sub">Averaged across all 6 weather parameters</div>
+      <div style="height:260px;"><canvas id="chartRMSECity"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🏆 Best Model per City</div>
+      <div class="chart-sub">Win count across all targets</div>
+      <div style="height:260px;"><canvas id="chartRMSEWins"></canvas></div>
+    </div>
+  </div>
+
+  <div class="rmse-section">
+    <div class="rmse-header">
+      <div>
+        <div class="chart-title">RMSE Summary Table</div>
+        <div class="chart-sub" style="margin:0;">Average RMSE across all weather parameters per city</div>
+      </div>
+      <div style="font-size:12px;color:#888;">
+        <span style="color:#69f0ae;font-weight:bold;">■</span> Best &nbsp;
+        <span style="color:#ffca28;font-weight:bold;">■</span> Mid &nbsp;
+        <span style="color:#ef5350;font-weight:bold;">■</span> Worst
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>City</th>
+            <th>Random Forest</th>
+            <th>XGBoost</th>
+            <th>Linear Regression</th>
+            <th>Best Model</th>
+          </tr>
+        </thead>
+        <tbody id="rmseBody">
+          <tr><td colspan="5" class="loading-overlay">Click "Load" to fetch results</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="rmse-section" id="rmseDetailSection" style="display:none;">
+    <div class="rmse-header">
+      <div>
+        <div class="chart-title">Per-Target RMSE Breakdown</div>
+        <div class="chart-sub" style="margin:0;">RMSE for each weather parameter, all 8 cities</div>
+      </div>
+      <div class="form-group">
+        <select id="rmseTargetSel" onchange="renderDetailTable()" style="min-width:180px;padding:7px 12px;">
+          <option value="tmax">Max Temperature</option>
+          <option value="tmin">Min Temperature</option>
+          <option value="humidity">Humidity</option>
+          <option value="precipitation">Precipitation</option>
+          <option value="pressure">Pressure</option>
+          <option value="wind_speed">Wind Speed</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>City</th><th>Random Forest</th><th>XGBoost</th><th>Linear Regression</th><th>Winner</th></tr>
+        </thead>
+        <tbody id="rmseDetailBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ALL STATES -->
+<div class="page" id="page-states">
+  <div class="topbar">
+    <div><h2>All States Weather</h2><p>Live data via OpenWeatherMap</p></div>
+    <button class="btn btn-sky" onclick="loadStates()">🔄 Refresh</button>
+  </div>
+  <div class="form-row">
+    <input type="text" id="searchBar" placeholder="🔍 Search state or district..."
+      oninput="filterStates()" style="flex:1;padding:9px 12px;background:#0f3460;border:1px solid #1565c0;border-radius:5px;color:#e0e0e0;font-family:Arial,sans-serif;font-size:13px;outline:none;">
+  </div>
+  <div class="rmse-section">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>State/UT</th><th>District</th><th>Temperature</th><th>Condition</th><th>Humidity</th><th>Wind</th></tr></thead>
+        <tbody id="statesBody"><tr><td colspan="7" class="loading-overlay">Click Refresh to load</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+const FLASK = "http://127.0.0.1:5000";
+Chart.defaults.color = '#64748b';
+Chart.defaults.borderColor = 'rgba(99,179,237,0.08)';
+Chart.defaults.font.family = 'Outfit';
+
+const WICON = id => {
+  if(id>=200&&id<300)return"⛈️";if(id>=300&&id<400)return"🌦️";
+  if(id>=500&&id<600)return"🌧️";if(id>=600&&id<700)return"❄️";
+  if(id>=700&&id<800)return"🌫️";if(id===800)return"☀️";
+  if(id===801)return"🌤️";if(id===802)return"⛅";return"🌥️";
+};
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+let allStatesData=[], realForecastChart=null, _rmseData=null;
+
+function showPage(name,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+  if(name==='dashboard') loadDashboard();
+  if(name==='states') loadStates();
+  if(name==='rmse') loadRMSE();
+}
+
+function showErr(id,msg){
+  const el=document.getElementById(id);
+  el.innerText="⚠️ "+msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),7000);
+}
+
+function getTempClass(t){
+  return t>=35?'badge-hot':t>=22?'badge-warm':t>=12?'badge-cool':'badge-cold';
+}
+
+function mkChart(id,type,data,opts){
+  const ex=Chart.getChart(id); if(ex)ex.destroy();
+  return new Chart(document.getElementById(id),{type,data,
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:type==='doughnut'}},...opts}});
+}
+
+function fmt(val, decimals=1){
+  const n = parseFloat(val);
+  return isNaN(n) ? '--' : n.toFixed(decimals);
+}
+
+// DASHBOARD
+async function loadDashboard(){
+  try{
+    const res=await fetch(`${FLASK}/all_states`);
+    const data=await res.json();
+    if(!Array.isArray(data)||!data.length)return;
+    const temps=data.map(d=>d.temperature).filter(v=>!isNaN(v));
+    const hums=data.map(d=>d.humidity).filter(v=>!isNaN(v));
+    const winds=data.map(d=>d.wind_speed).filter(v=>!isNaN(v));
+    const avg=arr=>(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1);
+    document.getElementById('statAvgTemp').innerText=avg(temps)+'°';
+    document.getElementById('statAvgHum').innerText=avg(hums)+'%';
+    const maxT=Math.max(...temps),minT=Math.min(...temps);
+    const maxD=data.find(d=>d.temperature===maxT),minD=data.find(d=>d.temperature===minT);
+    document.getElementById('statMaxTemp').innerText=maxT.toFixed(1)+'°';
+    document.getElementById('statMaxState').innerText=maxD?maxD.state:'--';
+    document.getElementById('statMinTemp').innerText=minT.toFixed(1)+'°';
+    document.getElementById('statMinState').innerText=minD?minD.state:'--';
+    const sorted=[...data].sort((a,b)=>b.temperature-a.temperature);
+    mkChart('chartStateTemp','bar',{
+      labels:sorted.map(d=>d.state.replace(' Pradesh','')),
+      datasets:[{label:'Temp (°C)',data:sorted.map(d=>d.temperature),
+        backgroundColor:sorted.map(d=>d.temperature>=35?'rgba(251,191,36,.75)':d.temperature>=22?'rgba(52,211,153,.75)':'rgba(56,189,248,.75)'),borderRadius:6}]
+    },{scales:{y:{beginAtZero:false}}});
+    const cmap={};data.forEach(d=>{cmap[d.condition]=(cmap[d.condition]||0)+1;});
+    const cent=Object.entries(cmap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    mkChart('chartConditions','doughnut',{
+      labels:cent.map(e=>e[0]),
+      datasets:[{data:cent.map(e=>e[1]),backgroundColor:['rgba(56,189,248,.8)','rgba(52,211,153,.8)','rgba(251,191,36,.8)','rgba(167,139,250,.8)','rgba(248,113,113,.8)','rgba(99,179,237,.5)'],borderWidth:0}]
+    },{plugins:{legend:{position:'right'}}});
+    const hr={'0–20':0,'21–40':0,'41–60':0,'61–80':0,'81–100':0};
+    hums.forEach(h=>{if(h<=20)hr['0–20']++;else if(h<=40)hr['21–40']++;else if(h<=60)hr['41–60']++;else if(h<=80)hr['61–80']++;else hr['81–100']++;});
+    mkChart('chartHumidity','bar',{labels:Object.keys(hr),datasets:[{label:'Cities',data:Object.values(hr),backgroundColor:'rgba(56,189,248,.7)',borderRadius:6}]},{});
+    const wr={'0–5':0,'6–10':0,'11–15':0,'16–20':0,'20+':0};
+    winds.forEach(w=>{if(w<=5)wr['0–5']++;else if(w<=10)wr['6–10']++;else if(w<=15)wr['11–15']++;else if(w<=20)wr['16–20']++;else wr['20+']++;});
+    mkChart('chartWind','bar',{labels:Object.keys(wr),datasets:[{label:'Cities',data:Object.values(wr),backgroundColor:'rgba(167,139,250,.7)',borderRadius:6}]},{});
+    mkChart('chartScatter','scatter',{datasets:[{label:'Cities',data:data.map(d=>({x:d.humidity,y:d.temperature})),backgroundColor:'rgba(56,189,248,.5)',pointRadius:5}]},
+      {scales:{x:{title:{display:true,text:'Humidity (%)'}},y:{title:{display:true,text:'Temp (°C)'}}}});
+  }catch(e){console.error(e);}
+}
+
+// REAL WEATHER
+async function getWeather(){
+  const city=document.getElementById('cityInput').value.trim();
+  if(!city){showErr('weatherError','Enter a city name.');return;}
+  try{
+    const res=await fetch(`${FLASK}/weather`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({city})});
+    const d=await res.json();
+    if(!res.ok||d.error){showErr('weatherError',d.error||'City not found.');return;}
+    displayWeather(d); get5DayForecast(city);
+  }catch(e){showErr('weatherError','Cannot connect to Flask on port 5000.');}
+}
+
+async function autoDetect(){
+  if(!navigator.geolocation){showErr('weatherError','Geolocation not supported.');return;}
+  document.getElementById('cityInput').value='Detecting...';
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const{latitude:lat,longitude:lon}=pos.coords;
+    try{
+      const res=await fetch(`${FLASK}/weather_coords`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lat,lon})});
+      const d=await res.json();
+      document.getElementById('cityInput').value=d.city;
+      displayWeather(d); get5DayForecast(d.city);
+    }catch(e){showErr('weatherError','Cannot connect to Flask.');}
+  },()=>{document.getElementById('cityInput').value='';showErr('weatherError','Location denied.');});
+}
+
+function displayWeather(d){
+  document.getElementById('wCity').innerText=d.city;
+  document.getElementById('wCountry').innerText=(d.country||'')+'  📍';
+  document.getElementById('wDesc').innerText=d.description;
+  document.getElementById('wIcon').innerText=WICON(d.weather_id||800);
+  document.getElementById('wTemp').innerText=Math.round(d.temperature)+'°C';
+  document.getElementById('wFeels').innerText='Feels like '+Math.round(d.feels_like)+'°C';
+  document.getElementById('wHum').innerText=d.humidity;
+  document.getElementById('wWind').innerText=d.wind_speed;
+  document.getElementById('wMinMax').innerText=Math.round(d.temp_min)+'° / '+Math.round(d.temp_max)+'°';
+  document.getElementById('weatherMainCard').classList.add('show');
+  document.getElementById('weatherDetails').style.display='block';
+}
+
+async function get5DayForecast(city){
+  try{
+    const res=await fetch(`${FLASK}/forecast`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({city})});
+    const data=await res.json();
+    if(!res.ok||data.error)return;
+    const sec=document.getElementById('forecastSection');
+    document.getElementById('realForecastCards').innerHTML=data.forecast.slice(0,5).map(day=>{
+      const dt=new Date(day.dt*1000);
+      return`<div class="fc-card"><div class="fc-date">${DAYS[dt.getDay()]}</div>
+        <div class="fc-icon">${WICON(day.weather_id||800)}</div>
+        <div class="fc-tmax">${Math.round(day.temp)}°C</div>
+        <div class="fc-hum">💧${day.humidity}%</div></div>`;
+    }).join('');
+    if(realForecastChart)realForecastChart.destroy();
+    realForecastChart=new Chart(document.getElementById('chartRealForecast'),{
+      type:'line',
+      data:{labels:data.forecast.slice(0,5).map(d=>DAYS[new Date(d.dt*1000).getDay()]),
+        datasets:[{label:'Temp (°C)',data:data.forecast.slice(0,5).map(d=>Math.round(d.temp)),
+          borderColor:'#34d399',backgroundColor:'rgba(52,211,153,.1)',fill:true,tension:.4,pointBackgroundColor:'#34d399',pointRadius:5}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+    });
+    sec.style.display='block';
+  }catch(e){console.error(e);}
+}
+
+// ML PREDICTION
+async function runMLPredict(){
+  const city=document.getElementById('mlCity').value;
+  const model=document.getElementById('mlModel').value;
+  document.getElementById('mlPredResults').style.display='none';
+  document.getElementById('mlError').classList.remove('show');
+
+  try{
+    const res=await fetch(`${FLASK}/predict`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({city,model})});
+    const d=await res.json();
+    if(!res.ok||d.error){showErr('mlError',d.error||'Prediction failed.');return;}
+
+    const badges={'RandomForestRegressor':'model-rf','XGBRegressor':'model-xgb','LinearRegression':'model-lr'};
+    const names={'RandomForestRegressor':'🌲 Random Forest','XGBRegressor':'⚡ XGBoost','LinearRegression':'📐 Linear Regression'};
+    const mname=Object.values(d.model_used)[0]||'';
+    document.getElementById('mlModelBadge').innerHTML=
+      `<span class="model-tag ${badges[mname]||'model-rf'}">${names[mname]||mname}</span>`;
+
+    const cur=d.current;
+    const curDefs=[
+      {icon:'🌡️',label:'Max Temp',val:cur.tmax,unit:'°C'},
+      {icon:'🌡️',label:'Min Temp',val:cur.tmin,unit:'°C'},
+      {icon:'💧',label:'Humidity',val:cur.humidity,unit:'%'},
+      {icon:'🌧️',label:'Precipitation',val:cur.precipitation,unit:'mm'},
+      {icon:'📊',label:'Pressure',val:cur.pressure,unit:'hPa'},
+      {icon:'💨',label:'Wind Speed',val:cur.wind_speed,unit:'km/h'},
+    ];
+    document.getElementById('mlCurrentGrid').innerHTML=curDefs.map(c=>
+      `<div class="pred-card"><div class="pred-icon">${c.icon}</div><div class="pred-label">${c.label}</div>
+       <div class="pred-val" style="color:#e0e0e0;">${fmt(c.val)}</div><div class="pred-unit">${c.unit}</div></div>`
+    ).join('');
+
+    const p=d.predictions;
+    const predDefs=[
+      {icon:'🌡️',label:'Max Temp (Tomorrow)',key:'tmax',unit:'°C'},
+      {icon:'🌡️',label:'Min Temp (Tomorrow)',key:'tmin',unit:'°C'},
+      {icon:'💧',label:'Humidity',key:'humidity',unit:'%'},
+      {icon:'🌧️',label:'Precipitation',key:'precipitation',unit:'mm'},
+      {icon:'📊',label:'Pressure',key:'pressure',unit:'hPa'},
+      {icon:'💨',label:'Wind Speed',key:'wind_speed',unit:'km/h'},
+    ];
+    document.getElementById('mlPredGrid').innerHTML=predDefs.map(pd=>{
+      const curVal=parseFloat(cur[pd.key])||0;
+      const pval=parseFloat(p[pd.key]);
+      const isValid=!isNaN(pval);
+      const diff=isValid?((pval-curVal)>=0?'▲':'▼'):'';
+      const diffColor=(isValid&&pval>=curVal)?'#ffca28':'#4fc3f7';
+      return`<div class="pred-card"><div class="pred-icon">${pd.icon}</div>
+        <div class="pred-label">${pd.label}</div>
+        <div class="pred-val">${isValid?fmt(pval):'--'}</div>
+        <div class="pred-unit">${pd.unit} &nbsp;<span style="color:${diffColor};font-size:13px;">${diff}</span></div>
+        <div class="pred-current">Current: ${fmt(curVal)}</div></div>`;
+    }).join('');
+
+    const labels=['Max Temp','Min Temp','Humidity','Precip','Pressure','Wind'];
+    const curVals=[cur.tmax,cur.tmin,cur.humidity,cur.precipitation,cur.pressure,cur.wind_speed].map(v=>parseFloat(v)||0);
+    const predVals=[p.tmax,p.tmin,p.humidity,p.precipitation,p.pressure,p.wind_speed].map(v=>parseFloat(v)||0);
+    mkChart('chartMLCompare','bar',{
+      labels,
+      datasets:[
+        {label:'Current',data:curVals,backgroundColor:'rgba(56,189,248,.6)',borderRadius:6},
+        {label:'Predicted (Tomorrow)',data:predVals,backgroundColor:'rgba(52,211,153,.6)',borderRadius:6},
+      ]
+    },{scales:{y:{beginAtZero:false}}});
+
+    document.getElementById('mlPredResults').style.display='block';
+  }catch(e){showErr('mlError','Cannot connect to Flask. Make sure app_ml.py is running.');}
+}
+
+// 15-DAY ML FORECAST
+async function runMLForecast(){
+  const city=document.getElementById('fcCity').value;
+  document.getElementById('fcResults').style.display='none';
+  document.getElementById('fcError').classList.remove('show');
+
+  try{
+    const res=await fetch(`${FLASK}/ml_forecast`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({city})});
+    const d=await res.json();
+    if(!res.ok||d.error){showErr('fcError',d.error||'Forecast failed.');return;}
+
+    const fc=d.forecast;
+
+    const norm=fc.map(f=>({
+      date      : f.date,
+      tmax      : parseFloat(f.tmax      ?? f.temp_max   ?? f.max_temp   ?? f.temperature ?? null),
+      tmin      : parseFloat(f.tmin      ?? f.temp_min   ?? f.min_temp   ?? null),
+      humidity  : parseFloat(f.humidity  ?? f.rh         ?? null),
+      precipitation: parseFloat(f.precipitation ?? f.precip ?? f.rain ?? 0),
+      pressure  : parseFloat(f.pressure  ?? f.pres       ?? null),
+      wind_speed: parseFloat(f.wind_speed ?? f.wind      ?? f.windspeed  ?? null),
+    }));
+
+    const labels=norm.map(f=>{
+      const dt=new Date(f.date);
+      return`${DAYS[dt.getDay()]} ${dt.getDate()}/${dt.getMonth()+1}`;
+    });
+
+    document.getElementById('fcCards').innerHTML=norm.map(f=>{
+      const dt=new Date(f.date);
+      const tmaxOk=!isNaN(f.tmax), tminOk=!isNaN(f.tmin), humOk=!isNaN(f.humidity);
+      const precipOk=!isNaN(f.precipitation)&&f.precipitation>0;
+      return`<div class="fc-card">
+        <div class="fc-date">${DAYS[dt.getDay()]}<br>${dt.getDate()}/${dt.getMonth()+1}</div>
+        <div class="fc-icon">${(!isNaN(f.precipitation)&&f.precipitation>2)?'🌧️':(!isNaN(f.humidity)&&f.humidity>80)?'🌥️':'☀️'}</div>
+        <div class="fc-tmax">${tmaxOk?fmt(f.tmax,1)+'°':'--'}</div>
+        <div class="fc-tmin">${tminOk?fmt(f.tmin,1)+'°':'--'}</div>
+        <div class="fc-hum">💧${humOk?Math.round(f.humidity)+'%':'--'}</div>
+        ${precipOk?`<div class="fc-hum">🌧️${fmt(f.precipitation,1)}mm</div>`:''}
+      </div>`;
+    }).join('');
+
+    const tmaxData=norm.map(f=>isNaN(f.tmax)?null:f.tmax);
+    const tminData=norm.map(f=>isNaN(f.tmin)?null:f.tmin);
+    mkChart('chartFcTemp','line',{
+      labels,
+      datasets:[
+        {label:'Max Temp (°C)',data:tmaxData,borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,.1)',fill:true,tension:.4,pointRadius:3,spanGaps:true},
+        {label:'Min Temp (°C)',data:tminData,borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,.1)',fill:true,tension:.4,pointRadius:3,spanGaps:true},
+      ]
+    },{plugins:{legend:{display:true}},scales:{y:{title:{display:true,text:'°C'}}}});
+
+    const humData=norm.map(f=>isNaN(f.humidity)?null:f.humidity);
+    const precipData=norm.map(f=>isNaN(f.precipitation)?0:f.precipitation);
+    mkChart('chartFcHum','bar',{
+      labels,
+      datasets:[
+        {label:'Humidity (%)',data:humData,backgroundColor:'rgba(56,189,248,.55)',borderRadius:4,yAxisID:'y'},
+        {label:'Precipitation (mm)',data:precipData,backgroundColor:'rgba(167,139,250,.7)',borderRadius:4,yAxisID:'y1'},
+      ]
+    },{plugins:{legend:{display:true}},scales:{
+      y:{position:'left',title:{display:true,text:'%'},beginAtZero:true},
+      y1:{position:'right',title:{display:true,text:'mm'},grid:{drawOnChartArea:false},beginAtZero:true}
+    }});
+
+    const windData=norm.map(f=>isNaN(f.wind_speed)?null:f.wind_speed);
+    const presData=norm.map(f=>isNaN(f.pressure)?null:+(f.pressure/10).toFixed(1));
+    mkChart('chartFcWind','line',{
+      labels,
+      datasets:[
+        {label:'Wind Speed (km/h)',data:windData,borderColor:'#34d399',tension:.4,pointRadius:3,spanGaps:true},
+        {label:'Pressure (hPa÷10)',data:presData,borderColor:'#f472b6',tension:.4,pointRadius:3,borderDash:[4,4],spanGaps:true},
+      ]
+    },{plugins:{legend:{display:true}}});
+
+    document.getElementById('fcResults').style.display='block';
+  }catch(e){
+    console.error(e);
+    showErr('fcError','Cannot connect to Flask. Make sure app_ml.py is running.');
+  }
+}
+
+// RMSE COMPARISON
+async function loadRMSE(){
+  document.getElementById('rmseBody').innerHTML=`<tr><td colspan="5" class="loading-overlay">Loading RMSE data <span class="loader"></span></td></tr>`;
+  try{
+    const res=await fetch(`${FLASK}/rmse_comparison`);
+    const d=await res.json();
+    if(!res.ok||d.error){
+      document.getElementById('rmseBody').innerHTML=`<tr><td colspan="5" style="color:#ef5350;padding:20px;text-align:center;">⚠️ ${d.error}<br><small style="color:#888;">Run train_models.py first, then click Load again.</small></td></tr>`;
+      return;
+    }
+    _rmseData=d;
+    const sum=d.summary;
+
+    document.getElementById('rmseBody').innerHTML=sum.map(row=>{
+      const vals=[row.Random_Forest,row.XGBoost,row.Linear_Regression].filter(v=>v!=null);
+      const mn=Math.min(...vals),mx=Math.max(...vals);
+      const cls=v=>v===mn?'best':v===mx?'worst':'mid';
+      const bestName=row.Random_Forest<=row.XGBoost&&row.Random_Forest<=row.Linear_Regression?'🌲 RF':
+                     row.XGBoost<=row.Linear_Regression?'⚡ XGB':'📐 LR';
+      return`<tr>
+        <td><strong>${row.city}</strong></td>
+        <td class="${cls(row.Random_Forest)}">${row.Random_Forest??'—'}</td>
+        <td class="${cls(row.XGBoost)}">${row.XGBoost??'—'}</td>
+        <td class="${cls(row.Linear_Regression)}">${row.Linear_Regression??'—'}</td>
+        <td style="font-weight:bold;">${bestName}</td>
+      </tr>`;
+    }).join('');
+
+    mkChart('chartRMSECity','bar',{
+      labels:sum.map(r=>r.city),
+      datasets:[
+        {label:'Random Forest',data:sum.map(r=>r.Random_Forest),backgroundColor:'rgba(52,211,153,.7)',borderRadius:5},
+        {label:'XGBoost',data:sum.map(r=>r.XGBoost),backgroundColor:'rgba(251,191,36,.7)',borderRadius:5},
+        {label:'Linear Regression',data:sum.map(r=>r.Linear_Regression),backgroundColor:'rgba(167,139,250,.7)',borderRadius:5},
+      ]
+    },{plugins:{legend:{display:true}},scales:{y:{title:{display:true,text:'Avg RMSE'}}}});
+
+    let rfW=0,xgbW=0,lrW=0;
+    sum.forEach(r=>{
+      const m=Math.min(r.Random_Forest,r.XGBoost,r.Linear_Regression);
+      if(m===r.Random_Forest)rfW++;else if(m===r.XGBoost)xgbW++;else lrW++;
+    });
+    mkChart('chartRMSEWins','doughnut',{
+      labels:['Random Forest','XGBoost','Linear Regression'],
+      datasets:[{data:[rfW,xgbW,lrW],backgroundColor:['rgba(52,211,153,.8)','rgba(251,191,36,.8)','rgba(167,139,250,.8)'],borderWidth:0}]
+    },{plugins:{legend:{display:true,position:'bottom'}}});
+
+    document.getElementById('rmseDetailSection').style.display='block';
+    renderDetailTable();
+  }catch(e){
+    document.getElementById('rmseBody').innerHTML=`<tr><td colspan="5" style="color:#ef5350;padding:20px;text-align:center;">⚠️ Cannot connect to Flask. Run app_ml.py first.</td></tr>`;
+  }
+}
+
+function renderDetailTable(){
+  if(!_rmseData)return;
+  const target=document.getElementById('rmseTargetSel').value;
+  const det=_rmseData.detailed;
+  const rfKey=`${target}_Random_Forest`;
+  const xgbKey=`${target}_XGBoost`;
+  const lrKey=`${target}_Linear_Regression`;
+  document.getElementById('rmseDetailBody').innerHTML=det.map(row=>{
+    const rf=row[rfKey],xgb=row[xgbKey],lr=row[lrKey];
+    const vals=[rf,xgb,lr].filter(v=>v!=null);
+    const mn=Math.min(...vals),mx=Math.max(...vals);
+    const cls=v=>v===mn?'best':v===mx?'worst':'mid';
+    const winner=rf<=xgb&&rf<=lr?'🌲 RF':xgb<=lr?'⚡ XGB':'📐 LR';
+    return`<tr>
+      <td><strong>${row.city}</strong></td>
+      <td class="${cls(rf)}">${rf??'—'}</td>
+      <td class="${cls(xgb)}">${xgb??'—'}</td>
+      <td class="${cls(lr)}">${lr??'—'}</td>
+      <td style="font-weight:bold;">${winner}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ALL STATES
+async function loadStates(){
+  const tb=document.getElementById('statesBody');
+  tb.innerHTML=`<tr><td colspan="7" class="loading-overlay">Fetching live data <span class="loader"></span></td></tr>`;
+  try{
+    const res=await fetch(`${FLASK}/all_states`);
+    const data=await res.json();
+    allStatesData=data; renderStates(data);
+  }catch(e){
+    tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:30px;color:#ef5350;">⚠️ Cannot connect to Flask on port 5000.</td></tr>`;
+  }
+}
+
+function renderStates(data){
+  document.getElementById('statesBody').innerHTML=data.map((item,i)=>`
+    <tr>
+      <td style="color:#888;font-size:12px;">${i+1}</td>
+      <td><strong>${item.state||'—'}</strong></td>
+      <td style="color:#888;">${item.district||'—'}</td>
+      <td><span class="badge ${getTempClass(item.temperature)}">${item.temperature?.toFixed(1)}°C</span></td>
+      <td><span class="cond-badge">${item.condition||'—'}</span></td>
+      <td>${item.humidity}%</td>
+      <td>${item.wind_speed} km/h</td>
+    </tr>`).join('');
+}
+
+function filterStates(){
+  const q=document.getElementById('searchBar').value.toLowerCase();
+  renderStates(allStatesData.filter(item=>Object.values(item).some(v=>String(v).toLowerCase().includes(q))));
+}
+
+window.addEventListener('load',loadDashboard);
+</script>
+</body>
+</html>

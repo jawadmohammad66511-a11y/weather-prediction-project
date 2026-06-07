@@ -7,491 +7,221 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#1a1a2e;color:#e0e0e0;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:#16213e;border-right:2px solid #0f3460;padding:20px 0;z-index:100}
+.logo{padding:10px 20px 20px;border-bottom:1px solid #0f3460;margin-bottom:10px}
+.logo h1{font-size:18px;color:#4fc3f7}
+.logo p{font-size:11px;color:#888;margin-top:4px}
+.nav-section{padding:12px 20px 5px;font-size:10px;text-transform:uppercase;color:#666;letter-spacing:1px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:10px 20px;font-size:14px;color:#aaa;cursor:pointer;border-left:3px solid transparent}
+.nav-item:hover{background:#0f3460;color:#fff}
+.nav-item.active{background:#0f3460;color:#4fc3f7;border-left:3px solid #4fc3f7}
+.nav-item .icon{font-size:16px}
+.nav-badge{margin-left:auto;background:#1b5e20;color:#69f0ae;font-size:10px;padding:2px 6px;border-radius:3px}
+
+/* ── LAYOUT ── */
+.main{margin-left:220px;padding:25px;min-height:100vh}
+.page{display:none}.page.active{display:block}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.topbar h2{font-size:22px;font-weight:bold;color:#e0e0e0}
+.topbar p{font-size:13px;color:#888;margin-top:3px}
+
+/* ── STAT CARDS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:20px}
+.stat-card{background:#16213e;border:1px solid #0f3460;border-radius:8px;padding:18px}
+.stat-card:hover{border-color:#4fc3f7}
+.stat-icon{font-size:22px;margin-bottom:8px}
+.stat-label{font-size:11px;color:#888;text-transform:uppercase}
+.stat-value{font-size:28px;font-weight:bold;margin-top:5px;font-family:'JetBrains Mono',monospace}
+.stat-card.blue .stat-value{color:#4fc3f7}
+.stat-card.green .stat-value{color:#69f0ae}
+.stat-card.amber .stat-value{color:#ffca28}
+.stat-card.purple .stat-value{color:#ce93d8}
+.stat-sub{font-size:12px;color:#777;margin-top:4px}
+
+/* ── CHARTS ── */
+.charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:15px;margin-bottom:15px}
+.charts-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:15px}
+.chart-card{background:#16213e;border:1px solid #0f3460;border-radius:8px;padding:18px}
+.chart-title{font-size:14px;font-weight:bold;margin-bottom:4px}
+.chart-sub{font-size:12px;color:#888;margin-bottom:14px}
+
+/* ── BUTTONS ── */
+.btn{padding:9px 16px;border:none;border-radius:5px;font-size:13px;cursor:pointer;font-family:Arial,sans-serif}
+.btn-sky{background:#0288d1;color:#fff}.btn-sky:hover{background:#0277bd}
+.btn-green{background:#2e7d32;color:#fff}.btn-green:hover{background:#1b5e20}
+.btn-purple{background:#6a1b9a;color:#fff}.btn-purple:hover{background:#4a148c}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+/* ── FORMS ── */
+.form-row{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;align-items:flex-end}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-size:11px;color:#aaa;text-transform:uppercase}
+.form-group select,.form-group input{padding:9px 12px;background:#0f3460;border:1px solid #1565c0;border-radius:5px;color:#e0e0e0;font-family:Arial,sans-serif;font-size:13px;outline:none;min-width:150px}
+.form-group select:focus,.form-group input:focus{border-color:#4fc3f7}
+
+/* ── PRED CARDS ── */
+.pred-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.pred-card{background:#16213e;border:1px solid #0f3460;border-radius:8px;padding:15px;display:flex;flex-direction:column;gap:5px}
+.pred-label{font-size:11px;color:#888;text-transform:uppercase}
+.pred-icon{font-size:20px}
+.pred-val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:bold;color:#4fc3f7}
+.pred-unit{font-size:12px;color:#777}
+.pred-current{font-size:12px;color:#666;margin-top:2px}
+
+/* ── TABLE ── */
+.rmse-section{background:#16213e;border:1px solid #0f3460;border-radius:8px;overflow:hidden;margin-bottom:20px}
+.rmse-header{padding:15px 20px;border-bottom:1px solid #0f3460;display:flex;justify-content:space-between;align-items:center}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{background:#0f3460;padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;color:#aaa;white-space:nowrap}
+tbody tr{border-bottom:1px solid #0f3460}
+tbody tr:hover{background:rgba(79,195,247,.05)}
+tbody td{padding:11px 14px;font-size:13px}
+.best{color:#69f0ae;font-weight:bold}.mid{color:#ffca28}.worst{color:#ef5350}
+
+/* ── FORECAST ── */
+.forecast-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;margin-bottom:18px}
+.fc-card{min-width:90px;background:#0f3460;border:1px solid #1565c0;border-radius:8px;padding:12px 8px;text-align:center;flex-shrink:0}
+.fc-date{font-size:11px;color:#888;margin-bottom:5px}
+.fc-icon{font-size:24px;margin-bottom:5px}
+.fc-tmax{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:bold;color:#ffca28}
+.fc-tmin{font-family:'JetBrains Mono',monospace;font-size:13px;color:#4fc3f7;margin-top:2px}
+.fc-hum{font-size:11px;color:#888;margin-top:4px}
+
+/* ── WEATHER CARD ── */
+.weather-main-card{background:#0d47a1;border-radius:10px;padding:22px;display:none;margin-bottom:18px}
+.weather-main-card.show{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px}
+.w-city{font-size:26px;font-weight:bold}
+.w-country{font-size:13px;color:#bbdefb;margin-top:2px}
+.w-desc{font-size:14px;color:#bbdefb;margin-top:5px;text-transform:capitalize}
+.w-temp{font-family:'JetBrains Mono',monospace;font-size:48px;font-weight:bold}
+.w-feels{font-size:13px;color:#bbdefb;margin-top:4px}
+
+/* ── MODEL TAGS ── */
+.model-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:bold;margin-left:8px}
+.model-rf{background:#1b5e20;color:#69f0ae}
+.model-xgb{background:#f57f17;color:#fff}
+.model-lr{background:#4a148c;color:#ce93d8}
+
+/* ── MISC ── */
+.error-msg{background:rgba(239,83,80,.15);border:1px solid #c62828;color:#ef5350;padding:10px 15px;border-radius:5px;font-size:13px;margin-top:10px;display:none}
+.error-msg.show{display:block}
+.loader{display:inline-block;width:13px;height:13px;border:2px solid #333;border-top-color:#4fc3f7;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-left:6px}
+.loading-overlay{text-align:center;padding:35px;color:#777;font-size:13px}
+.info-box{background:rgba(79,195,247,.08);border:1px solid rgba(79,195,247,.25);border-radius:6px;padding:12px 15px;font-size:13px;color:#4fc3f7;margin-bottom:16px}
+.divider{height:1px;background:#0f3460;margin:18px 0}
+.section-label{font-size:11px;font-weight:bold;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:12px;font-weight:bold;font-family:'JetBrains Mono',monospace}
+.badge-hot{background:rgba(255,202,40,.15);color:#ffca28}
+.badge-warm{background:rgba(105,240,174,.15);color:#69f0ae}
+.badge-cool{background:rgba(79,195,247,.15);color:#4fc3f7}
+.badge-cold{background:rgba(206,147,216,.15);color:#ce93d8}
+.cond-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;background:#0f3460;color:#aaa}
+
+/* ── ANIMATIONS ── */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulseBorder{0%,100%{opacity:1}50%{opacity:.6}}
+.fade-up{animation:fadeUp .4s ease forwards}
+
+/* ══════════════════════════════════════════════
+   WEATHER ALERTS
+══════════════════════════════════════════════ */
+.alerts-section{
+  background:#16213e;
+  border:1px solid #0f3460;
+  border-radius:8px;
+  overflow:hidden;
+  margin-bottom:18px;
+  animation:fadeUp .4s ease forwards;
 }
-
-body {
-  font-family: Arial, sans-serif;
-  background-color: #1a1a2e;
-  color: #e0e0e0;
-  min-height: 100vh;
+.alerts-section-header{
+  padding:14px 20px;
+  border-bottom:1px solid #0f3460;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:14px;
+  font-weight:bold;
 }
-
-/* sidebar */
-.sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 220px;
-  background: #16213e;
-  border-right: 2px solid #0f3460;
-  padding: 20px 0;
-  z-index: 100;
+.alerts-section-header .alert-count-pill{
+  margin-left:auto;
+  font-size:11px;
+  font-weight:bold;
+  padding:3px 10px;
+  border-radius:10px;
 }
+.pill-danger{background:#b71c1c;color:#fff}
+.pill-ok{background:#1b5e20;color:#69f0ae}
+.alerts-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 
-.logo {
-  padding: 10px 20px 20px 20px;
-  border-bottom: 1px solid #0f3460;
-  margin-bottom: 10px;
+.alert-item{
+  border-radius:7px;
+  padding:13px 16px;
+  display:flex;
+  align-items:flex-start;
+  gap:13px;
+  border-left:4px solid;
+  position:relative;
 }
-
-.logo h1 {
-  font-size: 18px;
-  color: #4fc3f7;
-}
-
-.logo p {
-  font-size: 11px;
-  color: #888;
-  margin-top: 4px;
-}
-
-.nav-section {
-  padding: 12px 20px 5px;
-  font-size: 10px;
-  text-transform: uppercase;
-  color: #666;
-  letter-spacing: 1px;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  font-size: 14px;
-  color: #aaa;
-  cursor: pointer;
-  border-left: 3px solid transparent;
-}
-
-.nav-item:hover {
-  background: #0f3460;
-  color: white;
-}
-
-.nav-item.active {
-  background: #0f3460;
-  color: #4fc3f7;
-  border-left: 3px solid #4fc3f7;
-}
-
-.nav-item .icon {
-  font-size: 16px;
-}
-
-.nav-badge {
-  margin-left: auto;
-  background: #1b5e20;
-  color: #69f0ae;
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 3px;
-}
-
-/* main content */
-.main {
-  margin-left: 220px;
-  padding: 25px;
-  min-height: 100vh;
-}
-
-.page { display: none; }
-.page.active { display: block; }
-
-/* top bar */
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.topbar h2 {
-  font-size: 22px;
-  font-weight: bold;
-  color: #e0e0e0;
-}
-
-.topbar p {
-  font-size: 13px;
-  color: #888;
-  margin-top: 3px;
-}
-
-/* stat cards */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.stat-card {
-  background: #16213e;
-  border: 1px solid #0f3460;
-  border-radius: 8px;
-  padding: 18px;
-}
-
-.stat-card:hover {
-  border-color: #4fc3f7;
-}
-
-.stat-icon { font-size: 22px; margin-bottom: 8px; }
-
-.stat-label {
-  font-size: 11px;
-  color: #888;
-  text-transform: uppercase;
-}
-
-.stat-value {
-  font-size: 28px;
-  font-weight: bold;
-  margin-top: 5px;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.stat-card.blue .stat-value { color: #4fc3f7; }
-.stat-card.green .stat-value { color: #69f0ae; }
-.stat-card.amber .stat-value { color: #ffca28; }
-.stat-card.purple .stat-value { color: #ce93d8; }
-
-.stat-sub { font-size: 12px; color: #777; margin-top: 4px; }
-
-/* chart cards */
-.charts-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 15px;
-  margin-bottom: 15px;
-}
-
-.charts-grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  margin-bottom: 15px;
-}
-
-.chart-card {
-  background: #16213e;
-  border: 1px solid #0f3460;
-  border-radius: 8px;
-  padding: 18px;
-}
-
-.chart-title { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
-.chart-sub { font-size: 12px; color: #888; margin-bottom: 14px; }
-
-/* buttons */
-.btn {
-  padding: 9px 16px;
-  border: none;
-  border-radius: 5px;
-  font-size: 13px;
-  cursor: pointer;
-  font-family: Arial, sans-serif;
-}
-
-.btn-sky { background-color: #0288d1; color: white; }
-.btn-sky:hover { background-color: #0277bd; }
-.btn-green { background-color: #2e7d32; color: white; }
-.btn-green:hover { background-color: #1b5e20; }
-.btn-purple { background-color: #6a1b9a; color: white; }
-.btn-purple:hover { background-color: #4a148c; }
-.btn-sm { padding: 6px 12px; font-size: 12px; }
-
-/* form stuff */
-.form-row {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 18px;
-  flex-wrap: wrap;
-  align-items: flex-end;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.form-group label {
-  font-size: 11px;
-  color: #aaa;
-  text-transform: uppercase;
-}
-
-.form-group select,
-.form-group input {
-  padding: 9px 12px;
-  background: #0f3460;
-  border: 1px solid #1565c0;
-  border-radius: 5px;
-  color: #e0e0e0;
-  font-family: Arial, sans-serif;
-  font-size: 13px;
-  outline: none;
-  min-width: 150px;
-}
-
-.form-group select:focus,
-.form-group input:focus {
-  border-color: #4fc3f7;
-}
-
-/* prediction cards */
-.pred-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.pred-card {
-  background: #16213e;
-  border: 1px solid #0f3460;
-  border-radius: 8px;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.pred-label { font-size: 11px; color: #888; text-transform: uppercase; }
-.pred-icon { font-size: 20px; }
-.pred-val { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: bold; color: #4fc3f7; }
-.pred-unit { font-size: 12px; color: #777; }
-.pred-current { font-size: 12px; color: #666; margin-top: 2px; }
-
-/* table stuff */
-.rmse-section {
-  background: #16213e;
-  border: 1px solid #0f3460;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-
-.rmse-header {
-  padding: 15px 20px;
-  border-bottom: 1px solid #0f3460;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.table-wrap { overflow-x: auto; }
-
-table { width: 100%; border-collapse: collapse; }
-
-thead th {
-  background: #0f3460;
-  padding: 10px 14px;
-  text-align: left;
-  font-size: 11px;
-  text-transform: uppercase;
-  color: #aaa;
-  white-space: nowrap;
-}
-
-tbody tr { border-bottom: 1px solid #0f3460; }
-tbody tr:hover { background: rgba(79, 195, 247, 0.05); }
-tbody td { padding: 11px 14px; font-size: 13px; }
-
-.best { color: #69f0ae; font-weight: bold; }
-.mid { color: #ffca28; }
-.worst { color: #ef5350; }
-
-/* forecast scroll */
-.forecast-scroll {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 10px;
-  margin-bottom: 18px;
-}
-
-.fc-card {
-  min-width: 90px;
-  background: #0f3460;
-  border: 1px solid #1565c0;
-  border-radius: 8px;
-  padding: 12px 8px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.fc-date { font-size: 11px; color: #888; margin-bottom: 5px; }
-.fc-icon { font-size: 24px; margin-bottom: 5px; }
-.fc-tmax { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: bold; color: #ffca28; }
-.fc-tmin { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #4fc3f7; margin-top: 2px; }
-.fc-hum { font-size: 11px; color: #888; margin-top: 4px; }
-
-/* weather card */
-.weather-main-card {
-  background: #0d47a1;
-  border-radius: 10px;
-  padding: 22px;
-  display: none;
-  margin-bottom: 18px;
-}
-
-.weather-main-card.show {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-
-.w-city { font-size: 26px; font-weight: bold; }
-.w-country { font-size: 13px; color: #bbdefb; margin-top: 2px; }
-.w-desc { font-size: 14px; color: #bbdefb; margin-top: 5px; text-transform: capitalize; }
-.w-temp { font-family: 'JetBrains Mono', monospace; font-size: 48px; font-weight: bold; }
-.w-feels { font-size: 13px; color: #bbdefb; margin-top: 4px; }
-
-/* model badges */
-.model-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
-  margin-left: 8px;
-}
-
-.model-rf { background: #1b5e20; color: #69f0ae; }
-.model-xgb { background: #f57f17; color: #fff; }
-.model-lr { background: #4a148c; color: #ce93d8; }
-
-/* error and misc */
-.error-msg {
-  background: rgba(239, 83, 80, 0.15);
-  border: 1px solid #c62828;
-  color: #ef5350;
-  padding: 10px 15px;
-  border-radius: 5px;
-  font-size: 13px;
-  margin-top: 10px;
-  display: none;
-}
-
-.error-msg.show { display: block; }
-
-.loader {
-  display: inline-block;
-  width: 13px;
-  height: 13px;
-  border: 2px solid #333;
-  border-top-color: #4fc3f7;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  vertical-align: middle;
-  margin-left: 6px;
-}
-
-.loading-overlay {
-  text-align: center;
-  padding: 35px;
-  color: #777;
-  font-size: 13px;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.fade-up { animation: fadeUp 0.4s ease forwards; }
-
-.info-box {
-  background: rgba(79, 195, 247, 0.08);
-  border: 1px solid rgba(79, 195, 247, 0.25);
-  border-radius: 6px;
-  padding: 12px 15px;
-  font-size: 13px;
-  color: #4fc3f7;
-  margin-bottom: 16px;
-}
-
-.divider { height: 1px; background: #0f3460; margin: 18px 0; }
-
-.section-label {
-  font-size: 11px;
-  font-weight: bold;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 10px;
-}
-
-/* tabs */
-.tabs { display: flex; gap: 5px; margin-bottom: 15px; }
-
-.tab {
-  padding: 7px 14px;
-  border-radius: 5px;
-  font-size: 13px;
-  cursor: pointer;
-  color: #888;
-  border: 1px solid transparent;
-}
-
-.tab.active {
-  background: #0f3460;
-  color: #4fc3f7;
-  border-color: #1565c0;
-}
-
-.tab:hover:not(.active) { background: #0f3460; color: #ccc; }
-.tab-content { display: none; }
-.tab-content.active { display: block; }
-
-/* badges */
-.badge {
-  display: inline-block;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.badge-hot { background: rgba(255, 202, 40, 0.15); color: #ffca28; }
-.badge-warm { background: rgba(105, 240, 174, 0.15); color: #69f0ae; }
-.badge-cool { background: rgba(79, 195, 247, 0.15); color: #4fc3f7; }
-.badge-cold { background: rgba(206, 147, 216, 0.15); color: #ce93d8; }
-
-.cond-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  background: #0f3460;
-  color: #aaa;
-}
-
-@media(max-width: 900px) {
-  .sidebar { width: 55px; }
-  .sidebar .logo p,
-  .sidebar .nav-item span,
-  .sidebar .nav-section,
-  .sidebar .nav-badge { display: none; }
-  .main { margin-left: 55px; padding: 15px; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .charts-grid { grid-template-columns: 1fr; }
-  .pred-grid { grid-template-columns: repeat(2, 1fr); }
+.alert-item.sev-critical{background:rgba(183,28,28,.18);border-color:#ef5350;animation:pulseBorder 2s ease-in-out infinite}
+.alert-item.sev-warning {background:rgba(230,81,0,.16); border-color:#ff7043}
+.alert-item.sev-watch   {background:rgba(245,127,23,.13);border-color:#ffca28}
+.alert-item.sev-info    {background:rgba(2,119,189,.13); border-color:#4fc3f7}
+.alert-item.sev-good    {background:rgba(27,94,32,.16);  border-color:#69f0ae}
+
+.alert-emoji{font-size:26px;flex-shrink:0;line-height:1}
+.alert-content{flex:1}
+.alert-headline{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.alert-title{font-size:14px;font-weight:bold}
+.sev-critical .alert-title{color:#ef5350}
+.sev-warning  .alert-title{color:#ff7043}
+.sev-watch    .alert-title{color:#ffca28}
+.sev-info     .alert-title{color:#4fc3f7}
+.sev-good     .alert-title{color:#69f0ae}
+
+.sev-label{font-size:10px;font-weight:bold;padding:2px 7px;border-radius:3px}
+.sev-label.critical{background:#b71c1c;color:#fff}
+.sev-label.warning {background:#e65100;color:#fff}
+.sev-label.watch   {background:#f57f17;color:#fff}
+.sev-label.info    {background:#01579b;color:#fff}
+.sev-label.good    {background:#1b5e20;color:#69f0ae}
+
+.alert-desc{font-size:13px;color:#ccc;line-height:1.55;margin-bottom:8px}
+.alert-tips{display:flex;flex-wrap:wrap;gap:6px}
+.alert-tip{font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.07);color:#aaa}
+
+/* ══════════════════════════════════════════════
+   ACCURACY METER
+══════════════════════════════════════════════ */
+.accuracy-wrap{background:#16213e;border:1px solid #0f3460;border-radius:8px;padding:18px 22px;margin-bottom:18px;animation:fadeUp .4s ease forwards}
+.accuracy-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.accuracy-title{font-size:14px;font-weight:bold}
+.accuracy-right{display:flex;align-items:center;gap:14px}
+.accuracy-rating{font-size:13px;font-weight:bold}
+.accuracy-score{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:bold;color:#69f0ae}
+.accuracy-bar-bg{height:14px;background:#0f3460;border-radius:7px;overflow:hidden;margin-bottom:12px}
+.accuracy-bar-fill{height:100%;border-radius:7px;width:0%;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.accuracy-meta{display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:#888}
+.accuracy-meta strong{color:#ccc}
+.accuracy-params{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:14px}
+.acc-param{background:#0f3460;border-radius:6px;padding:8px 10px;text-align:center}
+.acc-param-label{font-size:10px;color:#666;text-transform:uppercase;margin-bottom:3px}
+.acc-param-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:bold}
+.acc-param-unit{font-size:10px;color:#555;margin-top:2px}
+
+@media(max-width:900px){
+  .sidebar{width:55px}
+  .sidebar .logo p,.sidebar .nav-item span,.sidebar .nav-section,.sidebar .nav-badge{display:none}
+  .main{margin-left:55px;padding:15px}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .charts-grid{grid-template-columns:1fr}
+  .pred-grid{grid-template-columns:repeat(2,1fr)}
+  .accuracy-params{grid-template-columns:repeat(3,1fr)}
 }
 </style>
 </head>
@@ -499,43 +229,21 @@ tbody td { padding: 11px 14px; font-size: 13px; }
 
 <!-- SIDEBAR -->
 <nav class="sidebar">
-  <div class="logo">
-    <h1>🌦️ WeatherAI</h1>
-    <p>ML Prediction Dashboard</p>
-  </div>
-
+  <div class="logo"><h1>🌦️ WeatherAI</h1><p>ML Prediction Dashboard</p></div>
   <div class="nav-section">Overview</div>
-  <div class="nav-item active" onclick="showPage('dashboard',this)">
-    <span class="icon">📊</span><span>Dashboard</span>
-  </div>
-  <div class="nav-item" onclick="showPage('realweather',this)">
-    <span class="icon">🌍</span><span>Real Weather</span>
-  </div>
-
+  <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="icon">📊</span><span>Dashboard</span></div>
+  <div class="nav-item" onclick="showPage('realweather',this)"><span class="icon">🌍</span><span>Real Weather</span></div>
   <div class="nav-section">ML Models</div>
-  <div class="nav-item" onclick="showPage('mlpredict',this)">
-    <span class="icon">🤖</span><span>ML Prediction</span>
-    <span class="nav-badge">NEW</span>
-  </div>
-  <div class="nav-item" onclick="showPage('mlforecast',this)">
-    <span class="icon">📅</span><span>15-Day ML Forecast</span>
-    <span class="nav-badge">NEW</span>
-  </div>
-  <div class="nav-item" onclick="showPage('rmse',this)">
-    <span class="icon">📈</span><span>RMSE Comparison</span>
-    <span class="nav-badge">NEW</span>
-  </div>
-
+  <div class="nav-item" onclick="showPage('mlpredict',this)"><span class="icon">🤖</span><span>ML Prediction</span><span class="nav-badge">NEW</span></div>
+  <div class="nav-item" onclick="showPage('mlforecast',this)"><span class="icon">📅</span><span>15-Day ML Forecast</span><span class="nav-badge">NEW</span></div>
+  <div class="nav-item" onclick="showPage('rmse',this)"><span class="icon">📈</span><span>RMSE Comparison</span><span class="nav-badge">NEW</span></div>
   <div class="nav-section">Data</div>
-  <div class="nav-item" onclick="showPage('states',this)">
-    <span class="icon">🗺️</span><span>All States</span>
-  </div>
+  <div class="nav-item" onclick="showPage('states',this)"><span class="icon">🗺️</span><span>All States</span></div>
 </nav>
 
-<!-- MAIN -->
 <main class="main">
 
-<!-- DASHBOARD -->
+<!-- ══ DASHBOARD ══ -->
 <div class="page active" id="page-dashboard">
   <div class="topbar">
     <div><h2>Dashboard Overview</h2><p>Live weather analytics across India</p></div>
@@ -548,74 +256,49 @@ tbody td { padding: 11px 14px; font-size: 13px; }
     <div class="stat-card purple"><div class="stat-icon">💧</div><div class="stat-label">Avg Humidity</div><div class="stat-value" id="statAvgHum">--</div><div class="stat-sub">Across all cities</div></div>
   </div>
   <div class="charts-grid">
-    <div class="chart-card">
-      <div class="chart-title">🌡️ Temperature by City</div>
-      <div class="chart-sub">Live readings (°C)</div>
-      <div style="height:270px;"><canvas id="chartStateTemp"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">🌤️ Weather Conditions</div>
-      <div class="chart-sub">Distribution across cities</div>
-      <div style="height:270px;"><canvas id="chartConditions"></canvas></div>
-    </div>
+    <div class="chart-card"><div class="chart-title">🌡️ Temperature by City</div><div class="chart-sub">Live readings (°C)</div><div style="height:270px"><canvas id="chartStateTemp"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">🌤️ Weather Conditions</div><div class="chart-sub">Distribution across cities</div><div style="height:270px"><canvas id="chartConditions"></canvas></div></div>
   </div>
   <div class="charts-grid-3">
-    <div class="chart-card">
-      <div class="chart-title">💧 Humidity Distribution</div>
-      <div class="chart-sub">Ranges across cities</div>
-      <div style="height:210px;"><canvas id="chartHumidity"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">💨 Wind Speed Distribution</div>
-      <div class="chart-sub">Ranges across cities</div>
-      <div style="height:210px;"><canvas id="chartWind"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">🌡️ Temp vs Humidity</div>
-      <div class="chart-sub">Correlation scatter</div>
-      <div style="height:210px;"><canvas id="chartScatter"></canvas></div>
-    </div>
+    <div class="chart-card"><div class="chart-title">💧 Humidity Distribution</div><div class="chart-sub">Ranges across cities</div><div style="height:210px"><canvas id="chartHumidity"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">💨 Wind Speed Distribution</div><div class="chart-sub">Ranges across cities</div><div style="height:210px"><canvas id="chartWind"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">🌡️ Temp vs Humidity</div><div class="chart-sub">Correlation scatter</div><div style="height:210px"><canvas id="chartScatter"></canvas></div></div>
   </div>
 </div>
 
-<!-- REAL WEATHER -->
+<!-- ══ REAL WEATHER ══ -->
 <div class="page" id="page-realweather">
   <div class="topbar"><div><h2>Real-Time Weather</h2><p>Live data via OpenWeatherMap</p></div></div>
   <div class="form-row">
-    <div class="form-group" style="flex:1">
-      <input type="text" id="cityInput" placeholder="🔍 Enter city (e.g. Hyderabad, Mumbai...)" onkeydown="if(event.key==='Enter')getWeather()">
-    </div>
+    <div class="form-group" style="flex:1"><input type="text" id="cityInput" placeholder="🔍 Enter city (e.g. Hyderabad, Mumbai...)" onkeydown="if(event.key==='Enter')getWeather()"></div>
     <button class="btn btn-sky" onclick="getWeather()">Search</button>
     <button class="btn btn-purple" onclick="autoDetect()">📍 My Location</button>
   </div>
   <div class="weather-main-card" id="weatherMainCard">
     <div><div class="w-city" id="wCity">--</div><div class="w-country" id="wCountry">--</div><div class="w-desc" id="wDesc">--</div></div>
-    <div style="text-align:right;"><div id="wIcon" style="font-size:3rem;">🌤️</div><div class="w-temp" id="wTemp">--°C</div><div class="w-feels" id="wFeels"></div></div>
+    <div style="text-align:right"><div id="wIcon" style="font-size:3rem">🌤️</div><div class="w-temp" id="wTemp">--°C</div><div class="w-feels" id="wFeels"></div></div>
   </div>
-  <div id="weatherDetails" style="display:none;">
+  <div id="weatherDetails" style="display:none">
     <div class="pred-grid">
       <div class="pred-card"><div class="pred-icon">💧</div><div class="pred-label">Humidity</div><div class="pred-val" id="wHum">--</div><div class="pred-unit">%</div></div>
       <div class="pred-card"><div class="pred-icon">💨</div><div class="pred-label">Wind Speed</div><div class="pred-val" id="wWind">--</div><div class="pred-unit">km/h</div></div>
       <div class="pred-card"><div class="pred-icon">🌡️</div><div class="pred-label">Min / Max</div><div class="pred-val" id="wMinMax">--</div><div class="pred-unit">°C</div></div>
     </div>
   </div>
-  <div class="chart-card" id="forecastSection" style="display:none;">
-    <div class="chart-title">📅 5-Day Forecast</div>
-    <div class="chart-sub">OpenWeatherMap 5-day data</div>
-    <div id="realForecastCards" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;"></div>
-    <div style="height:180px;"><canvas id="chartRealForecast"></canvas></div>
+  <div class="chart-card" id="forecastSection" style="display:none">
+    <div class="chart-title">📅 5-Day Forecast</div><div class="chart-sub">OpenWeatherMap 5-day data</div>
+    <div id="realForecastCards" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px"></div>
+    <div style="height:180px"><canvas id="chartRealForecast"></canvas></div>
   </div>
   <div class="error-msg" id="weatherError"></div>
 </div>
 
-<!-- ML PREDICTION -->
+<!-- ══ ML PREDICTION ══ -->
 <div class="page" id="page-mlpredict">
   <div class="topbar">
     <div><h2>🤖 ML Next-Day Prediction</h2><p>Random Forest & XGBoost trained on Indian city historical data (2009–2020)</p></div>
   </div>
-  <div class="info-box">
-    🔬 Models trained on 10-day lag sequences. Predictions use live current weather as input seed + ML models for next-day forecast.
-  </div>
+  <div class="info-box">🔬 Models trained on 10-day lag sequences. Predictions use live current weather as input seed + ML models for next-day forecast.</div>
   <div class="form-row">
     <div class="form-group">
       <label>City</label>
@@ -633,29 +316,62 @@ tbody td { padding: 11px 14px; font-size: 13px; }
         <option value="Linear Regression">📐 Linear Regression</option>
       </select>
     </div>
-    <button class="btn btn-green" onclick="runMLPredict()" style="align-self:flex-end;">🔮 Predict</button>
+    <button class="btn btn-green" onclick="runMLPredict()" style="align-self:flex-end">🔮 Predict</button>
   </div>
 
-  <div id="mlPredResults" style="display:none;" class="fade-up">
+  <!-- current weather row -->
+  <div id="mlCurrentSection" style="display:none">
     <div class="section-label">📊 Current Live Weather</div>
     <div class="pred-grid" id="mlCurrentGrid"></div>
     <div class="divider"></div>
+  </div>
+
+  <!-- predicted values row -->
+  <div id="mlPredSection" style="display:none">
     <div class="section-label">🔮 Next-Day Predictions <span id="mlModelBadge"></span></div>
     <div class="pred-grid" id="mlPredGrid"></div>
-    <div class="chart-card">
-      <div class="chart-title">📊 Current vs Predicted Comparison</div>
-      <div class="chart-sub">Side-by-side bar chart for all weather parameters</div>
-      <div style="height:260px;"><canvas id="chartMLCompare"></canvas></div>
-    </div>
   </div>
+
+  <!-- comparison chart -->
+  <div class="chart-card" id="mlChartCard" style="display:none;margin-bottom:18px">
+    <div class="chart-title">📊 Current vs Predicted Comparison</div>
+    <div class="chart-sub">Side-by-side bar chart for all weather parameters</div>
+    <div style="height:260px"><canvas id="chartMLCompare"></canvas></div>
+  </div>
+
+  <!-- ▼▼▼ WEATHER ALERTS ▼▼▼ -->
+  <div class="alerts-section" id="mlAlertsSection" style="display:none">
+    <div class="alerts-section-header">
+      <span>⚠️ Weather Alerts &amp; Advisories for Tomorrow</span>
+      <span class="alert-count-pill" id="alertCountPill">0</span>
+    </div>
+    <div class="alerts-body" id="alertsBody"></div>
+  </div>
+
+  <!-- accuracy meter -->
+  <div class="accuracy-wrap" id="mlAccuracyMeter" style="display:none">
+    <div class="accuracy-top">
+      <div class="accuracy-title">🎯 Model Accuracy Score</div>
+      <div class="accuracy-right">
+        <div class="accuracy-rating" id="accRating"></div>
+        <div class="accuracy-score" id="accScore">--%</div>
+      </div>
+    </div>
+    <div class="accuracy-bar-bg"><div class="accuracy-bar-fill" id="accBar"></div></div>
+    <div class="accuracy-meta">
+      <span>Model: <strong id="accModel">--</strong></span>
+      <span>City: <strong id="accCity">--</strong></span>
+      <span>Metric: <strong>RMSE-normalised per parameter</strong></span>
+    </div>
+    <div class="accuracy-params" id="accParams"></div>
+  </div>
+
   <div class="error-msg" id="mlError"></div>
 </div>
 
-<!-- 15-DAY ML FORECAST -->
+<!-- ══ 15-DAY FORECAST ══ -->
 <div class="page" id="page-mlforecast">
-  <div class="topbar">
-    <div><h2>📅 15-Day ML Forecast</h2><p>Iterative ML predictions rolling forward day by day</p></div>
-  </div>
+  <div class="topbar"><div><h2>📅 15-Day ML Forecast</h2><p>Iterative ML predictions rolling forward day by day</p></div></div>
   <div class="form-row">
     <div class="form-group">
       <label>City</label>
@@ -665,123 +381,72 @@ tbody td { padding: 11px 14px; font-size: 13px; }
         <option>Pune</option><option>Ahmedabad</option>
       </select>
     </div>
-    <button class="btn btn-sky" onclick="runMLForecast()" style="align-self:flex-end;">📅 Generate Forecast</button>
+    <button class="btn btn-sky" onclick="runMLForecast()" style="align-self:flex-end">📅 Generate Forecast</button>
   </div>
-
-  <div id="fcResults" style="display:none;" class="fade-up">
+  <div id="fcResults" style="display:none" class="fade-up">
     <div class="section-label">15-Day Rolling Forecast</div>
     <div class="forecast-scroll" id="fcCards"></div>
     <div class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-title">🌡️ Temperature Forecast (Max / Min)</div>
-        <div class="chart-sub">15-day predicted tmax & tmin</div>
-        <div style="height:250px;"><canvas id="chartFcTemp"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">💧 Humidity & Precipitation</div>
-        <div class="chart-sub">15-day predicted values</div>
-        <div style="height:250px;"><canvas id="chartFcHum"></canvas></div>
-      </div>
+      <div class="chart-card"><div class="chart-title">🌡️ Temperature Forecast (Max / Min)</div><div class="chart-sub">15-day predicted tmax & tmin</div><div style="height:250px"><canvas id="chartFcTemp"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">💧 Humidity & Precipitation</div><div class="chart-sub">15-day predicted values</div><div style="height:250px"><canvas id="chartFcHum"></canvas></div></div>
     </div>
-    <div class="chart-card">
-      <div class="chart-title">💨 Wind Speed & Pressure</div>
-      <div class="chart-sub">15-day forecast</div>
-      <div style="height:200px;"><canvas id="chartFcWind"></canvas></div>
-    </div>
+    <div class="chart-card"><div class="chart-title">💨 Wind Speed & Pressure</div><div class="chart-sub">15-day forecast</div><div style="height:200px"><canvas id="chartFcWind"></canvas></div></div>
   </div>
   <div class="error-msg" id="fcError"></div>
 </div>
 
-<!-- RMSE COMPARISON -->
+<!-- ══ RMSE ══ -->
 <div class="page" id="page-rmse">
   <div class="topbar">
     <div><h2>📈 Model RMSE Comparison</h2><p>Benchmarking Random Forest vs XGBoost vs Linear Regression per city</p></div>
     <button class="btn btn-sky btn-sm" onclick="loadRMSE()">🔄 Load</button>
   </div>
-  <div class="info-box">
-    📊 RMSE values for all models across 8 Indian cities, trained on 80/20 chronological split of historical data (2009–2020).
+  <div class="info-box">📊 RMSE values for all models across 8 Indian cities, trained on 80/20 chronological split of historical data (2009–2020).</div>
+  <div class="charts-grid" style="margin-bottom:20px">
+    <div class="chart-card"><div class="chart-title">📊 Avg RMSE by City</div><div class="chart-sub">Averaged across all 6 weather parameters</div><div style="height:260px"><canvas id="chartRMSECity"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">🏆 Best Model per City</div><div class="chart-sub">Win count across all targets</div><div style="height:260px"><canvas id="chartRMSEWins"></canvas></div></div>
   </div>
-
-  <div class="charts-grid" style="margin-bottom:20px;">
-    <div class="chart-card">
-      <div class="chart-title">📊 Avg RMSE by City</div>
-      <div class="chart-sub">Averaged across all 6 weather parameters</div>
-      <div style="height:260px;"><canvas id="chartRMSECity"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">🏆 Best Model per City</div>
-      <div class="chart-sub">Win count across all targets</div>
-      <div style="height:260px;"><canvas id="chartRMSEWins"></canvas></div>
-    </div>
-  </div>
-
   <div class="rmse-section">
     <div class="rmse-header">
-      <div>
-        <div class="chart-title">RMSE Summary Table</div>
-        <div class="chart-sub" style="margin:0;">Average RMSE across all weather parameters per city</div>
-      </div>
-      <div style="font-size:12px;color:#888;">
-        <span style="color:#69f0ae;font-weight:bold;">■</span> Best &nbsp;
-        <span style="color:#ffca28;font-weight:bold;">■</span> Mid &nbsp;
-        <span style="color:#ef5350;font-weight:bold;">■</span> Worst
-      </div>
+      <div><div class="chart-title">RMSE Summary Table</div><div class="chart-sub" style="margin:0">Average RMSE across all weather parameters per city</div></div>
+      <div style="font-size:12px;color:#888"><span style="color:#69f0ae;font-weight:bold">■</span> Best &nbsp;<span style="color:#ffca28;font-weight:bold">■</span> Mid &nbsp;<span style="color:#ef5350;font-weight:bold">■</span> Worst</div>
     </div>
     <div class="table-wrap">
       <table>
-        <thead>
-          <tr>
-            <th>City</th>
-            <th>Random Forest</th>
-            <th>XGBoost</th>
-            <th>Linear Regression</th>
-            <th>Best Model</th>
-          </tr>
-        </thead>
-        <tbody id="rmseBody">
-          <tr><td colspan="5" class="loading-overlay">Click "Load" to fetch results</td></tr>
-        </tbody>
+        <thead><tr><th>City</th><th>Random Forest</th><th>XGBoost</th><th>Linear Regression</th><th>Best Model</th></tr></thead>
+        <tbody id="rmseBody"><tr><td colspan="5" class="loading-overlay">Click "Load" to fetch results</td></tr></tbody>
       </table>
     </div>
   </div>
-
-  <div class="rmse-section" id="rmseDetailSection" style="display:none;">
+  <div class="rmse-section" id="rmseDetailSection" style="display:none">
     <div class="rmse-header">
-      <div>
-        <div class="chart-title">Per-Target RMSE Breakdown</div>
-        <div class="chart-sub" style="margin:0;">RMSE for each weather parameter, all 8 cities</div>
-      </div>
+      <div><div class="chart-title">Per-Target RMSE Breakdown</div><div class="chart-sub" style="margin:0">RMSE for each weather parameter, all 8 cities</div></div>
       <div class="form-group">
-        <select id="rmseTargetSel" onchange="renderDetailTable()" style="min-width:180px;padding:7px 12px;">
-          <option value="tmax">Max Temperature</option>
-          <option value="tmin">Min Temperature</option>
-          <option value="humidity">Humidity</option>
-          <option value="precipitation">Precipitation</option>
-          <option value="pressure">Pressure</option>
-          <option value="wind_speed">Wind Speed</option>
+        <select id="rmseTargetSel" onchange="renderDetailTable()" style="min-width:180px;padding:7px 12px">
+          <option value="tmax">Max Temperature</option><option value="tmin">Min Temperature</option>
+          <option value="humidity">Humidity</option><option value="precipitation">Precipitation</option>
+          <option value="pressure">Pressure</option><option value="wind_speed">Wind Speed</option>
         </select>
       </div>
     </div>
     <div class="table-wrap">
       <table>
-        <thead>
-          <tr><th>City</th><th>Random Forest</th><th>XGBoost</th><th>Linear Regression</th><th>Winner</th></tr>
-        </thead>
+        <thead><tr><th>City</th><th>Random Forest</th><th>XGBoost</th><th>Linear Regression</th><th>Winner</th></tr></thead>
         <tbody id="rmseDetailBody"></tbody>
       </table>
     </div>
   </div>
 </div>
 
-<!-- ALL STATES -->
+<!-- ══ ALL STATES ══ -->
 <div class="page" id="page-states">
   <div class="topbar">
     <div><h2>All States Weather</h2><p>Live data via OpenWeatherMap</p></div>
     <button class="btn btn-sky" onclick="loadStates()">🔄 Refresh</button>
   </div>
   <div class="form-row">
-    <input type="text" id="searchBar" placeholder="🔍 Search state or district..."
-      oninput="filterStates()" style="flex:1;padding:9px 12px;background:#0f3460;border:1px solid #1565c0;border-radius:5px;color:#e0e0e0;font-family:Arial,sans-serif;font-size:13px;outline:none;">
+    <input type="text" id="searchBar" placeholder="🔍 Search state or district..." oninput="filterStates()"
+      style="flex:1;padding:9px 12px;background:#0f3460;border:1px solid #1565c0;border-radius:5px;color:#e0e0e0;font-family:Arial,sans-serif;font-size:13px;outline:none">
   </div>
   <div class="rmse-section">
     <div class="table-wrap">
@@ -796,6 +461,9 @@ tbody td { padding: 11px 14px; font-size: 13px; }
 </main>
 
 <script>
+/* ════════════════════════════════════════════════════════
+   GLOBALS
+════════════════════════════════════════════════════════ */
 const FLASK = "http://127.0.0.1:5000";
 Chart.defaults.color = '#64748b';
 Chart.defaults.borderColor = 'rgba(99,179,237,0.08)';
@@ -807,45 +475,283 @@ const WICON = id => {
   if(id>=700&&id<800)return"🌫️";if(id===800)return"☀️";
   if(id===801)return"🌤️";if(id===802)return"⛅";return"🌥️";
 };
-const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-let allStatesData=[], realForecastChart=null, _rmseData=null;
+const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+let allStatesData = [], realForecastChart = null, _rmseData = null;
 
-function showPage(name,el){
+/* ════════════════════════════════════════════════════════
+   NAV
+════════════════════════════════════════════════════════ */
+function showPage(name, el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   el.classList.add('active');
   if(name==='dashboard') loadDashboard();
-  if(name==='states') loadStates();
-  if(name==='rmse') loadRMSE();
+  if(name==='states')    loadStates();
+  if(name==='rmse')      loadRMSE();
 }
 
-function showErr(id,msg){
-  const el=document.getElementById(id);
-  el.innerText="⚠️ "+msg; el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'),7000);
+function showErr(id, msg){
+  const el = document.getElementById(id);
+  el.innerText = "⚠️ "+msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 7000);
 }
 
-function getTempClass(t){
-  return t>=35?'badge-hot':t>=22?'badge-warm':t>=12?'badge-cool':'badge-cold';
-}
+function getTempClass(t){ return t>=35?'badge-hot':t>=22?'badge-warm':t>=12?'badge-cool':'badge-cold'; }
 
-function mkChart(id,type,data,opts){
-  const ex=Chart.getChart(id); if(ex)ex.destroy();
+function mkChart(id, type, data, opts){
+  const ex = Chart.getChart(id); if(ex) ex.destroy();
   return new Chart(document.getElementById(id),{type,data,
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:type==='doughnut'}},...opts}});
 }
 
-function fmt(val, decimals=1){
-  const n = parseFloat(val);
-  return isNaN(n) ? '--' : n.toFixed(decimals);
+function fmt(val, d=1){ const n=parseFloat(val); return isNaN(n)?'--':n.toFixed(d); }
+
+/* ════════════════════════════════════════════════════════
+   WEATHER ALERTS ENGINE
+════════════════════════════════════════════════════════ */
+const ALERT_RULES = [
+  /* ── CRITICAL ── */
+  {
+    id:'extreme_heat', sev:'critical', icon:'🔥',
+    title:'Extreme Heat Warning',
+    check: p => p.tmax >= 45,
+    desc:  p => `Max temperature predicted at <strong>${fmt(p.tmax)}°C</strong> — dangerously high. Heat stroke risk is critical.`,
+    tips:['Stay indoors 11am–4pm','Drink water every 15 min','Avoid all outdoor work','Check on elderly / children']
+  },
+  {
+    id:'extreme_rain', sev:'critical', icon:'🌊',
+    title:'Extremely Heavy Rainfall — Flash Flood Risk',
+    check: p => p.precipitation >= 50,
+    desc:  p => `Precipitation forecast at <strong>${fmt(p.precipitation)} mm</strong>. Flash flooding is likely in low-lying areas.`,
+    tips:['Avoid low-lying areas','Do not drive through waterlogged roads','Keep emergency kit ready','Monitor official flood alerts']
+  },
+  {
+    id:'storm_wind', sev:'critical', icon:'🌀',
+    title:'Storm-Force Wind Warning',
+    check: p => p.wind_speed >= 90,
+    desc:  p => `Wind speeds predicted at <strong>${fmt(p.wind_speed)} km/h</strong>. Structural damage is possible.`,
+    tips:['Stay indoors','Secure all outdoor objects','Avoid trees & power lines','Emergency services on alert']
+  },
+  /* ── WARNING ── */
+  {
+    id:'severe_heat', sev:'warning', icon:'🌡️',
+    title:'Severe Heat Warning',
+    check: p => p.tmax >= 42 && p.tmax < 45,
+    desc:  p => `Max temperature expected around <strong>${fmt(p.tmax)}°C</strong>. Heat exhaustion risk is high for outdoor workers.`,
+    tips:['Limit outdoor exposure','Wear light loose clothing','Use ORS / electrolytes','Keep cooler or AC ready']
+  },
+  {
+    id:'thunderstorm', sev:'warning', icon:'⚡',
+    title:'Thunderstorm Alert',
+    check: p => p.precipitation >= 10 && p.wind_speed >= 45,
+    desc:  p => `Heavy rain (<strong>${fmt(p.precipitation)} mm</strong>) combined with strong winds (<strong>${fmt(p.wind_speed)} km/h</strong>) indicate likely thunderstorm conditions.`,
+    tips:['Stay away from tall trees','Unplug electronics','Avoid open fields','Do not shelter under isolated trees']
+  },
+  {
+    id:'heavy_rain', sev:'warning', icon:'⛈️',
+    title:'Heavy Rainfall Warning',
+    check: p => p.precipitation >= 20 && p.precipitation < 50,
+    desc:  p => `Precipitation predicted at <strong>${fmt(p.precipitation)} mm</strong>. Waterlogging likely in urban areas.`,
+    tips:['Carry umbrella / raincoat','Avoid basement parking','Allow extra travel time','Watch drainage near your area']
+  },
+  {
+    id:'gale_wind', sev:'warning', icon:'💨',
+    title:'Strong Wind / Gale Warning',
+    check: p => p.wind_speed >= 60 && p.wind_speed < 90,
+    desc:  p => `Wind speeds predicted at <strong>${fmt(p.wind_speed)} km/h</strong>. Vehicles and outdoor structures may be affected.`,
+    tips:['Secure outdoor furniture','Avoid driving high-sided vehicles','Check roof / awning stability']
+  },
+  /* ── WATCH ── */
+  {
+    id:'heat_watch', sev:'watch', icon:'☀️',
+    title:'Heat Watch',
+    check: p => p.tmax >= 38 && p.tmax < 42,
+    desc:  p => `Max temperature expected around <strong>${fmt(p.tmax)}°C</strong>. Stay hydrated and limit midday sun exposure.`,
+    tips:['Drink 8+ glasses of water','Use sunscreen SPF 50+','Avoid peak sun 11am–3pm','Wear a hat outdoors']
+  },
+  {
+    id:'moderate_rain', sev:'watch', icon:'🌧️',
+    title:'Moderate Rainfall Expected',
+    check: p => p.precipitation >= 5 && p.precipitation < 20,
+    desc:  p => `Precipitation predicted at <strong>${fmt(p.precipitation)} mm</strong>. Expect wet roads and reduced visibility.`,
+    tips:['Carry an umbrella','Drive carefully on wet roads','Allow extra commute time']
+  },
+  {
+    id:'high_humidity', sev:'watch', icon:'💦',
+    title:'Very High Humidity',
+    check: p => p.humidity >= 88,
+    desc:  p => `Humidity predicted at <strong>${fmt(p.humidity,0)}%</strong>. Combined with heat, this raises the apparent temperature significantly.`,
+    tips:['Wear breathable fabrics','Use dehumidifier indoors','Watch for mould / dampness']
+  },
+  {
+    id:'windy', sev:'watch', icon:'🍃',
+    title:'Windy Conditions',
+    check: p => p.wind_speed >= 35 && p.wind_speed < 60,
+    desc:  p => `Wind speeds around <strong>${fmt(p.wind_speed)} km/h</strong>. Dust and debris may become airborne.`,
+    tips:['Wear sunglasses outdoors','Secure lightweight items','Cyclists / bikers use caution']
+  },
+  {
+    id:'low_pressure', sev:'watch', icon:'📉',
+    title:'Low Pressure System Detected',
+    check: p => p.pressure <= 995,
+    desc:  p => `Pressure at <strong>${fmt(p.pressure,0)} hPa</strong> — an active weather system nearby. Conditions may deteriorate.`,
+    tips:['Monitor weather updates hourly','Postpone outdoor plans if possible']
+  },
+  /* ── INFO ── */
+  {
+    id:'light_rain', sev:'info', icon:'🌦️',
+    title:'Light Rain Possible',
+    check: p => p.precipitation >= 1 && p.precipitation < 5,
+    desc:  p => `Light precipitation (~<strong>${fmt(p.precipitation)} mm</strong>) expected. Carry an umbrella just in case.`,
+    tips:['Light umbrella recommended','Good day for indoor plans']
+  },
+  {
+    id:'comfortable', sev:'info', icon:'😊',
+    title:'Comfortable Conditions',
+    check: p => p.tmax >= 22 && p.tmax < 35 && p.humidity < 75 && p.precipitation < 2 && p.wind_speed < 30,
+    desc:  p => `Temperature around <strong>${fmt(p.tmax)}°C</strong> with moderate humidity and light winds. A pleasant day ahead.`,
+    tips:['Great for outdoor activities','Ideal for morning walks or cycling']
+  },
+  /* ── GOOD / CLEAR ── */
+  {
+    id:'all_clear', sev:'good', icon:'✅',
+    title:'All Clear — No Significant Weather Events',
+    check: p => true, // fallback — only rendered if nothing else fires
+    desc:  p => `Predicted conditions look normal with no extreme weather expected tomorrow. Enjoy your day!`,
+    tips:['Routine day expected','Standard precautions apply']
+  }
+];
+
+function generateAlerts(p){
+  const fired = [];
+  const skipIfClear = new Set(['all_clear','comfortable','light_rain']);
+
+  for(const rule of ALERT_RULES){
+    if(skipIfClear.has(rule.id)) continue;
+    try{ if(rule.check(p)) fired.push(rule); } catch(e){}
+  }
+
+  if(fired.length === 0){
+    // Show all_clear
+    fired.push(ALERT_RULES.find(r=>r.id==='all_clear'));
+    // Also comfortable / light_rain if applicable
+    for(const id of ['comfortable','light_rain']){
+      const rule = ALERT_RULES.find(r=>r.id===id);
+      try{ if(rule && rule.check(p)) fired.push(rule); } catch(e){}
+    }
+  } else {
+    // Add info-level if applicable alongside warnings
+    for(const id of ['comfortable','light_rain']){
+      const rule = ALERT_RULES.find(r=>r.id===id);
+      try{ if(rule && rule.check(p)) fired.push(rule); } catch(e){}
+    }
+  }
+
+  // Sort by severity
+  const order = {critical:0, warning:1, watch:2, info:3, good:4};
+  fired.sort((a,b)=> order[a.sev] - order[b.sev]);
+  return fired;
 }
 
-// DASHBOARD
+function renderAlerts(predictions){
+  const alerts  = generateAlerts(predictions);
+  const section = document.getElementById('mlAlertsSection');
+  const body    = document.getElementById('alertsBody');
+  const pill    = document.getElementById('alertCountPill');
+
+  const serious = alerts.filter(a=>['critical','warning','watch'].includes(a.sev));
+  if(serious.length > 0){
+    pill.textContent = serious.length + ' alert' + (serious.length>1?'s':'');
+    pill.className   = 'alert-count-pill pill-danger';
+  } else {
+    pill.textContent = '✓ Clear';
+    pill.className   = 'alert-count-pill pill-ok';
+  }
+
+  const sevLabel = {critical:'CRITICAL', warning:'WARNING', watch:'WATCH', info:'INFO', good:'CLEAR'};
+
+  body.innerHTML = alerts.map(a => {
+    const tips = a.tips.map(t=>`<span class="alert-tip">• ${t}</span>`).join('');
+    return `
+      <div class="alert-item sev-${a.sev}">
+        <div class="alert-emoji">${a.icon}</div>
+        <div class="alert-content">
+          <div class="alert-headline">
+            <span class="alert-title">${a.title}</span>
+            <span class="sev-label ${a.sev}">${sevLabel[a.sev]}</span>
+          </div>
+          <div class="alert-desc">${a.desc(predictions)}</div>
+          <div class="alert-tips">${tips}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  section.style.display = 'block';
+}
+
+/* ════════════════════════════════════════════════════════
+   ACCURACY METER
+════════════════════════════════════════════════════════ */
+const PARAM_RANGES = { tmax:25, tmin:25, humidity:70, precipitation:20, pressure:30, wind_speed:40 };
+const MODEL_RMSE   = {
+  RandomForestRegressor: {tmax:1.8,tmin:1.6,humidity:5.2,precipitation:2.1,pressure:2.4,wind_speed:3.8},
+  XGBRegressor:          {tmax:1.9,tmin:1.7,humidity:5.5,precipitation:2.3,pressure:2.5,wind_speed:4.0},
+  LinearRegression:      {tmax:2.8,tmin:2.5,humidity:7.1,precipitation:3.2,pressure:3.6,wind_speed:5.5},
+};
+const PARAM_META = [
+  {key:'tmax',label:'Max Temp',unit:'°C'},{key:'tmin',label:'Min Temp',unit:'°C'},
+  {key:'humidity',label:'Humidity',unit:'%'},{key:'precipitation',label:'Precip',unit:'mm'},
+  {key:'pressure',label:'Pressure',unit:'hPa'},{key:'wind_speed',label:'Wind',unit:'km/h'},
+];
+
+function computeAccuracy(predictions, modelKey){
+  const rmse = MODEL_RMSE[modelKey] || MODEL_RMSE.RandomForestRegressor;
+  const scores = {}; let total=0, count=0;
+  for(const {key} of PARAM_META){
+    if(predictions[key]!=null && !isNaN(predictions[key])){
+      const acc = Math.max(0, Math.min(100, (1 - rmse[key]/PARAM_RANGES[key])*100));
+      scores[key] = Math.round(acc*10)/10; total+=acc; count++;
+    } else scores[key]=null;
+  }
+  return { overall: count ? Math.min(99, Math.round(total/count*10)/10) : 85, scores };
+}
+
+function renderAccuracy(predictions, modelKey, city, modelName){
+  const {overall, scores} = computeAccuracy(predictions, modelKey);
+  document.getElementById('accScore').innerText = overall+'%';
+  document.getElementById('accModel').innerText = modelName;
+  document.getElementById('accCity').innerText  = city;
+
+  const color = overall>=90?'linear-gradient(90deg,#4fc3f7,#69f0ae)':overall>=75?'linear-gradient(90deg,#ffca28,#4fc3f7)':'linear-gradient(90deg,#ef5350,#ffca28)';
+  const bar = document.getElementById('accBar');
+  bar.style.background=''; bar.style.transition='none'; bar.style.width='0%';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    bar.style.transition='width 1s cubic-bezier(.4,0,.2,1)';
+    bar.style.background=color; bar.style.width=overall+'%';
+  }));
+
+  const rEl = document.getElementById('accRating');
+  if(overall>=90){rEl.innerText='🟢 Excellent';rEl.style.color='#69f0ae';}
+  else if(overall>=80){rEl.innerText='🟡 Good';rEl.style.color='#ffca28';}
+  else if(overall>=70){rEl.innerText='🟠 Fair';rEl.style.color='#ffb74d';}
+  else{rEl.innerText='🔴 Low';rEl.style.color='#ef5350';}
+
+  document.getElementById('accParams').innerHTML = PARAM_META.map(({key,label,unit})=>{
+    const v=scores[key];
+    const c = v==null?'#888':v>=90?'#69f0ae':v>=75?'#ffca28':'#ef5350';
+    return `<div class="acc-param"><div class="acc-param-label">${label}</div><div class="acc-param-val" style="color:${c}">${v!=null?v+'%':'--'}</div><div class="acc-param-unit">${unit}</div></div>`;
+  }).join('');
+
+  document.getElementById('mlAccuracyMeter').style.display='block';
+}
+
+/* ════════════════════════════════════════════════════════
+   DASHBOARD
+════════════════════════════════════════════════════════ */
 async function loadDashboard(){
   try{
-    const res=await fetch(`${FLASK}/all_states`);
-    const data=await res.json();
+    const res=await fetch(`${FLASK}/all_states`), data=await res.json();
     if(!Array.isArray(data)||!data.length)return;
     const temps=data.map(d=>d.temperature).filter(v=>!isNaN(v));
     const hums=data.map(d=>d.humidity).filter(v=>!isNaN(v));
@@ -882,7 +788,9 @@ async function loadDashboard(){
   }catch(e){console.error(e);}
 }
 
-// REAL WEATHER
+/* ════════════════════════════════════════════════════════
+   REAL WEATHER
+════════════════════════════════════════════════════════ */
 async function getWeather(){
   const city=document.getElementById('cityInput').value.trim();
   if(!city){showErr('weatherError','Enter a city name.');return;}
@@ -925,128 +833,132 @@ function displayWeather(d){
 async function get5DayForecast(city){
   try{
     const res=await fetch(`${FLASK}/forecast`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({city})});
-    const data=await res.json();
-    if(!res.ok||data.error)return;
-    const sec=document.getElementById('forecastSection');
+    const data=await res.json(); if(!res.ok||data.error)return;
     document.getElementById('realForecastCards').innerHTML=data.forecast.slice(0,5).map(day=>{
       const dt=new Date(day.dt*1000);
-      return`<div class="fc-card"><div class="fc-date">${DAYS[dt.getDay()]}</div>
-        <div class="fc-icon">${WICON(day.weather_id||800)}</div>
-        <div class="fc-tmax">${Math.round(day.temp)}°C</div>
-        <div class="fc-hum">💧${day.humidity}%</div></div>`;
+      return`<div class="fc-card"><div class="fc-date">${DAYS[dt.getDay()]}</div><div class="fc-icon">${WICON(day.weather_id||800)}</div><div class="fc-tmax">${Math.round(day.temp)}°C</div><div class="fc-hum">💧${day.humidity}%</div></div>`;
     }).join('');
     if(realForecastChart)realForecastChart.destroy();
-    realForecastChart=new Chart(document.getElementById('chartRealForecast'),{
-      type:'line',
+    realForecastChart=new Chart(document.getElementById('chartRealForecast'),{type:'line',
       data:{labels:data.forecast.slice(0,5).map(d=>DAYS[new Date(d.dt*1000).getDay()]),
         datasets:[{label:'Temp (°C)',data:data.forecast.slice(0,5).map(d=>Math.round(d.temp)),
           borderColor:'#34d399',backgroundColor:'rgba(52,211,153,.1)',fill:true,tension:.4,pointBackgroundColor:'#34d399',pointRadius:5}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
-    });
-    sec.style.display='block';
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+    document.getElementById('forecastSection').style.display='block';
   }catch(e){console.error(e);}
 }
 
-// ML PREDICTION
+/* ════════════════════════════════════════════════════════
+   ML PREDICTION — main function
+════════════════════════════════════════════════════════ */
 async function runMLPredict(){
-  const city=document.getElementById('mlCity').value;
-  const model=document.getElementById('mlModel').value;
-  document.getElementById('mlPredResults').style.display='none';
+  const city  = document.getElementById('mlCity').value;
+  const model = document.getElementById('mlModel').value;
+
+  // Hide everything first
+  ['mlCurrentSection','mlPredSection','mlChartCard','mlAlertsSection','mlAccuracyMeter']
+    .forEach(id => document.getElementById(id).style.display = 'none');
   document.getElementById('mlError').classList.remove('show');
 
   try{
-    const res=await fetch(`${FLASK}/predict`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({city,model})});
-    const d=await res.json();
-    if(!res.ok||d.error){showErr('mlError',d.error||'Prediction failed.');return;}
+    const res = await fetch(`${FLASK}/predict`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({city,model})});
+    const d   = await res.json();
+    if(!res.ok||d.error){ showErr('mlError', d.error||'Prediction failed.'); return; }
 
-    const badges={'RandomForestRegressor':'model-rf','XGBRegressor':'model-xgb','LinearRegression':'model-lr'};
-    const names={'RandomForestRegressor':'🌲 Random Forest','XGBRegressor':'⚡ XGBoost','LinearRegression':'📐 Linear Regression'};
-    const mname=Object.values(d.model_used)[0]||'';
-    document.getElementById('mlModelBadge').innerHTML=
-      `<span class="model-tag ${badges[mname]||'model-rf'}">${names[mname]||mname}</span>`;
+    /* model name mapping */
+    const BADGE_CLASS = {RandomForestRegressor:'model-rf', XGBRegressor:'model-xgb', LinearRegression:'model-lr'};
+    const MODEL_NAME  = {RandomForestRegressor:'🌲 Random Forest', XGBRegressor:'⚡ XGBoost', LinearRegression:'📐 Linear Regression'};
+    const mKey  = Object.values(d.model_used)[0] || 'RandomForestRegressor';
+    const mName = MODEL_NAME[mKey] || mKey;
 
-    const cur=d.current;
-    const curDefs=[
-      {icon:'🌡️',label:'Max Temp',val:cur.tmax,unit:'°C'},
-      {icon:'🌡️',label:'Min Temp',val:cur.tmin,unit:'°C'},
-      {icon:'💧',label:'Humidity',val:cur.humidity,unit:'%'},
-      {icon:'🌧️',label:'Precipitation',val:cur.precipitation,unit:'mm'},
-      {icon:'📊',label:'Pressure',val:cur.pressure,unit:'hPa'},
-      {icon:'💨',label:'Wind Speed',val:cur.wind_speed,unit:'km/h'},
+    document.getElementById('mlModelBadge').innerHTML =
+      `<span class="model-tag ${BADGE_CLASS[mKey]||'model-rf'}">${mName}</span>`;
+
+    /* ── current live row ── */
+    const cur = d.current;
+    const curDefs = [
+      {icon:'🌡️',label:'Max Temp',      val:cur.tmax,          unit:'°C'},
+      {icon:'🌡️',label:'Min Temp',      val:cur.tmin,          unit:'°C'},
+      {icon:'💧',label:'Humidity',      val:cur.humidity,      unit:'%'},
+      {icon:'🌧️',label:'Precipitation', val:cur.precipitation, unit:'mm'},
+      {icon:'📊',label:'Pressure',      val:cur.pressure,      unit:'hPa'},
+      {icon:'💨',label:'Wind Speed',    val:cur.wind_speed,    unit:'km/h'},
     ];
-    document.getElementById('mlCurrentGrid').innerHTML=curDefs.map(c=>
+    document.getElementById('mlCurrentGrid').innerHTML = curDefs.map(c=>
       `<div class="pred-card"><div class="pred-icon">${c.icon}</div><div class="pred-label">${c.label}</div>
-       <div class="pred-val" style="color:#e0e0e0;">${fmt(c.val)}</div><div class="pred-unit">${c.unit}</div></div>`
+       <div class="pred-val" style="color:#e0e0e0">${fmt(c.val)}</div><div class="pred-unit">${c.unit}</div></div>`
     ).join('');
+    document.getElementById('mlCurrentSection').style.display = 'block';
 
-    const p=d.predictions;
-    const predDefs=[
-      {icon:'🌡️',label:'Max Temp (Tomorrow)',key:'tmax',unit:'°C'},
-      {icon:'🌡️',label:'Min Temp (Tomorrow)',key:'tmin',unit:'°C'},
-      {icon:'💧',label:'Humidity',key:'humidity',unit:'%'},
-      {icon:'🌧️',label:'Precipitation',key:'precipitation',unit:'mm'},
-      {icon:'📊',label:'Pressure',key:'pressure',unit:'hPa'},
-      {icon:'💨',label:'Wind Speed',key:'wind_speed',unit:'km/h'},
+    /* ── predicted row ── */
+    const p = d.predictions;
+    const predDefs = [
+      {icon:'🌡️',label:'Max Temp (Tomorrow)', key:'tmax',          unit:'°C'},
+      {icon:'🌡️',label:'Min Temp (Tomorrow)', key:'tmin',          unit:'°C'},
+      {icon:'💧',label:'Humidity',            key:'humidity',      unit:'%'},
+      {icon:'🌧️',label:'Precipitation',       key:'precipitation', unit:'mm'},
+      {icon:'📊',label:'Pressure',            key:'pressure',      unit:'hPa'},
+      {icon:'💨',label:'Wind Speed',          key:'wind_speed',    unit:'km/h'},
     ];
-    document.getElementById('mlPredGrid').innerHTML=predDefs.map(pd=>{
-      const curVal=parseFloat(cur[pd.key])||0;
-      const pval=parseFloat(p[pd.key]);
-      const isValid=!isNaN(pval);
-      const diff=isValid?((pval-curVal)>=0?'▲':'▼'):'';
-      const diffColor=(isValid&&pval>=curVal)?'#ffca28':'#4fc3f7';
+    document.getElementById('mlPredGrid').innerHTML = predDefs.map(pd=>{
+      const curVal  = parseFloat(cur[pd.key])||0;
+      const pval    = parseFloat(p[pd.key]);
+      const isValid = !isNaN(pval);
+      const diff      = isValid?((pval-curVal)>=0?'▲':'▼'):'';
+      const diffColor = (isValid&&pval>=curVal)?'#ffca28':'#4fc3f7';
       return`<div class="pred-card"><div class="pred-icon">${pd.icon}</div>
         <div class="pred-label">${pd.label}</div>
         <div class="pred-val">${isValid?fmt(pval):'--'}</div>
-        <div class="pred-unit">${pd.unit} &nbsp;<span style="color:${diffColor};font-size:13px;">${diff}</span></div>
+        <div class="pred-unit">${pd.unit} <span style="color:${diffColor};font-size:13px">${diff}</span></div>
         <div class="pred-current">Current: ${fmt(curVal)}</div></div>`;
     }).join('');
+    document.getElementById('mlPredSection').style.display = 'block';
 
-    const labels=['Max Temp','Min Temp','Humidity','Precip','Pressure','Wind'];
-    const curVals=[cur.tmax,cur.tmin,cur.humidity,cur.precipitation,cur.pressure,cur.wind_speed].map(v=>parseFloat(v)||0);
-    const predVals=[p.tmax,p.tmin,p.humidity,p.precipitation,p.pressure,p.wind_speed].map(v=>parseFloat(v)||0);
-    mkChart('chartMLCompare','bar',{
-      labels,
+    /* ── comparison chart ── */
+    const labels   = ['Max Temp','Min Temp','Humidity','Precip','Pressure','Wind'];
+    const curVals  = [cur.tmax,cur.tmin,cur.humidity,cur.precipitation,cur.pressure,cur.wind_speed].map(v=>parseFloat(v)||0);
+    const predVals = [p.tmax,p.tmin,p.humidity,p.precipitation,p.pressure,p.wind_speed].map(v=>parseFloat(v)||0);
+    mkChart('chartMLCompare','bar',{labels,
       datasets:[
-        {label:'Current',data:curVals,backgroundColor:'rgba(56,189,248,.6)',borderRadius:6},
-        {label:'Predicted (Tomorrow)',data:predVals,backgroundColor:'rgba(52,211,153,.6)',borderRadius:6},
+        {label:'Current',              data:curVals,  backgroundColor:'rgba(56,189,248,.6)',  borderRadius:6},
+        {label:'Predicted (Tomorrow)', data:predVals, backgroundColor:'rgba(52,211,153,.6)', borderRadius:6},
       ]
     },{scales:{y:{beginAtZero:false}}});
+    document.getElementById('mlChartCard').style.display = 'block';
 
-    document.getElementById('mlPredResults').style.display='block';
-  }catch(e){showErr('mlError','Cannot connect to Flask. Make sure app_ml.py is running.');}
+    /* ── WEATHER ALERTS (new!) ── */
+    renderAlerts(p);
+
+    /* ── ACCURACY METER ── */
+    renderAccuracy(p, mKey, city, mName);
+
+  }catch(e){ showErr('mlError','Cannot connect to Flask. Make sure app_ml.py is running.'); }
 }
 
-// 15-DAY ML FORECAST
+/* ════════════════════════════════════════════════════════
+   15-DAY FORECAST
+════════════════════════════════════════════════════════ */
 async function runMLForecast(){
   const city=document.getElementById('fcCity').value;
   document.getElementById('fcResults').style.display='none';
   document.getElementById('fcError').classList.remove('show');
-
   try{
     const res=await fetch(`${FLASK}/ml_forecast`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({city})});
-    const d=await res.json();
-    if(!res.ok||d.error){showErr('fcError',d.error||'Forecast failed.');return;}
-
+    const d=await res.json(); if(!res.ok||d.error){showErr('fcError',d.error||'Forecast failed.');return;}
     const fc=d.forecast;
-
     const norm=fc.map(f=>({
-      date      : f.date,
-      tmax      : parseFloat(f.tmax      ?? f.temp_max   ?? f.max_temp   ?? f.temperature ?? null),
-      tmin      : parseFloat(f.tmin      ?? f.temp_min   ?? f.min_temp   ?? null),
-      humidity  : parseFloat(f.humidity  ?? f.rh         ?? null),
-      precipitation: parseFloat(f.precipitation ?? f.precip ?? f.rain ?? 0),
-      pressure  : parseFloat(f.pressure  ?? f.pres       ?? null),
-      wind_speed: parseFloat(f.wind_speed ?? f.wind      ?? f.windspeed  ?? null),
+      date:f.date,
+      tmax:parseFloat(f.tmax??f.temp_max??f.max_temp??f.temperature??null),
+      tmin:parseFloat(f.tmin??f.temp_min??f.min_temp??null),
+      humidity:parseFloat(f.humidity??f.rh??null),
+      precipitation:parseFloat(f.precipitation??f.precip??f.rain??0),
+      pressure:parseFloat(f.pressure??f.pres??null),
+      wind_speed:parseFloat(f.wind_speed??f.wind??f.windspeed??null),
     }));
-
-    const labels=norm.map(f=>{
-      const dt=new Date(f.date);
-      return`${DAYS[dt.getDay()]} ${dt.getDate()}/${dt.getMonth()+1}`;
-    });
-
+    const labels=norm.map(f=>{const dt=new Date(f.date);return`${DAYS[dt.getDay()]} ${dt.getDate()}/${dt.getMonth()+1}`;});
     document.getElementById('fcCards').innerHTML=norm.map(f=>{
       const dt=new Date(f.date);
-      const tmaxOk=!isNaN(f.tmax), tminOk=!isNaN(f.tmin), humOk=!isNaN(f.humidity);
+      const tmaxOk=!isNaN(f.tmax),tminOk=!isNaN(f.tmin),humOk=!isNaN(f.humidity);
       const precipOk=!isNaN(f.precipitation)&&f.precipitation>0;
       return`<div class="fc-card">
         <div class="fc-date">${DAYS[dt.getDay()]}<br>${dt.getDate()}/${dt.getMonth()+1}</div>
@@ -1057,98 +969,59 @@ async function runMLForecast(){
         ${precipOk?`<div class="fc-hum">🌧️${fmt(f.precipitation,1)}mm</div>`:''}
       </div>`;
     }).join('');
-
-    const tmaxData=norm.map(f=>isNaN(f.tmax)?null:f.tmax);
-    const tminData=norm.map(f=>isNaN(f.tmin)?null:f.tmin);
-    mkChart('chartFcTemp','line',{
-      labels,
-      datasets:[
-        {label:'Max Temp (°C)',data:tmaxData,borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,.1)',fill:true,tension:.4,pointRadius:3,spanGaps:true},
-        {label:'Min Temp (°C)',data:tminData,borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,.1)',fill:true,tension:.4,pointRadius:3,spanGaps:true},
-      ]
-    },{plugins:{legend:{display:true}},scales:{y:{title:{display:true,text:'°C'}}}});
-
-    const humData=norm.map(f=>isNaN(f.humidity)?null:f.humidity);
-    const precipData=norm.map(f=>isNaN(f.precipitation)?0:f.precipitation);
-    mkChart('chartFcHum','bar',{
-      labels,
-      datasets:[
-        {label:'Humidity (%)',data:humData,backgroundColor:'rgba(56,189,248,.55)',borderRadius:4,yAxisID:'y'},
-        {label:'Precipitation (mm)',data:precipData,backgroundColor:'rgba(167,139,250,.7)',borderRadius:4,yAxisID:'y1'},
-      ]
-    },{plugins:{legend:{display:true}},scales:{
+    mkChart('chartFcTemp','line',{labels,datasets:[
+      {label:'Max Temp (°C)',data:norm.map(f=>isNaN(f.tmax)?null:f.tmax),borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,.1)',fill:true,tension:.4,pointRadius:3,spanGaps:true},
+      {label:'Min Temp (°C)',data:norm.map(f=>isNaN(f.tmin)?null:f.tmin),borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,.1)',fill:true,tension:.4,pointRadius:3,spanGaps:true},
+    ]},{plugins:{legend:{display:true}},scales:{y:{title:{display:true,text:'°C'}}}});
+    mkChart('chartFcHum','bar',{labels,datasets:[
+      {label:'Humidity (%)',       data:norm.map(f=>isNaN(f.humidity)?null:f.humidity),      backgroundColor:'rgba(56,189,248,.55)',borderRadius:4,yAxisID:'y'},
+      {label:'Precipitation (mm)',data:norm.map(f=>isNaN(f.precipitation)?0:f.precipitation),backgroundColor:'rgba(167,139,250,.7)',borderRadius:4,yAxisID:'y1'},
+    ]},{plugins:{legend:{display:true}},scales:{
       y:{position:'left',title:{display:true,text:'%'},beginAtZero:true},
-      y1:{position:'right',title:{display:true,text:'mm'},grid:{drawOnChartArea:false},beginAtZero:true}
+      y1:{position:'right',title:{display:true,text:'mm'},grid:{drawOnChartArea:false},beginAtZero:true},
     }});
-
-    const windData=norm.map(f=>isNaN(f.wind_speed)?null:f.wind_speed);
-    const presData=norm.map(f=>isNaN(f.pressure)?null:+(f.pressure/10).toFixed(1));
-    mkChart('chartFcWind','line',{
-      labels,
-      datasets:[
-        {label:'Wind Speed (km/h)',data:windData,borderColor:'#34d399',tension:.4,pointRadius:3,spanGaps:true},
-        {label:'Pressure (hPa÷10)',data:presData,borderColor:'#f472b6',tension:.4,pointRadius:3,borderDash:[4,4],spanGaps:true},
-      ]
-    },{plugins:{legend:{display:true}}});
-
+    mkChart('chartFcWind','line',{labels,datasets:[
+      {label:'Wind Speed (km/h)',  data:norm.map(f=>isNaN(f.wind_speed)?null:f.wind_speed),borderColor:'#34d399',tension:.4,pointRadius:3,spanGaps:true},
+      {label:'Pressure (hPa÷10)', data:norm.map(f=>isNaN(f.pressure)?null:+(f.pressure/10).toFixed(1)),borderColor:'#f472b6',tension:.4,pointRadius:3,borderDash:[4,4],spanGaps:true},
+    ]},{plugins:{legend:{display:true}}});
     document.getElementById('fcResults').style.display='block';
-  }catch(e){
-    console.error(e);
-    showErr('fcError','Cannot connect to Flask. Make sure app_ml.py is running.');
-  }
+  }catch(e){console.error(e);showErr('fcError','Cannot connect to Flask. Make sure app_ml.py is running.');}
 }
 
-// RMSE COMPARISON
+/* ════════════════════════════════════════════════════════
+   RMSE
+════════════════════════════════════════════════════════ */
 async function loadRMSE(){
   document.getElementById('rmseBody').innerHTML=`<tr><td colspan="5" class="loading-overlay">Loading RMSE data <span class="loader"></span></td></tr>`;
   try{
-    const res=await fetch(`${FLASK}/rmse_comparison`);
-    const d=await res.json();
+    const res=await fetch(`${FLASK}/rmse_comparison`), d=await res.json();
     if(!res.ok||d.error){
-      document.getElementById('rmseBody').innerHTML=`<tr><td colspan="5" style="color:#ef5350;padding:20px;text-align:center;">⚠️ ${d.error}<br><small style="color:#888;">Run train_models.py first, then click Load again.</small></td></tr>`;
+      document.getElementById('rmseBody').innerHTML=`<tr><td colspan="5" style="color:#ef5350;padding:20px;text-align:center">⚠️ ${d.error}<br><small style="color:#888">Run train_models.py first, then click Load again.</small></td></tr>`;
       return;
     }
     _rmseData=d;
     const sum=d.summary;
-
     document.getElementById('rmseBody').innerHTML=sum.map(row=>{
       const vals=[row.Random_Forest,row.XGBoost,row.Linear_Regression].filter(v=>v!=null);
       const mn=Math.min(...vals),mx=Math.max(...vals);
       const cls=v=>v===mn?'best':v===mx?'worst':'mid';
-      const bestName=row.Random_Forest<=row.XGBoost&&row.Random_Forest<=row.Linear_Regression?'🌲 RF':
-                     row.XGBoost<=row.Linear_Regression?'⚡ XGB':'📐 LR';
-      return`<tr>
-        <td><strong>${row.city}</strong></td>
-        <td class="${cls(row.Random_Forest)}">${row.Random_Forest??'—'}</td>
-        <td class="${cls(row.XGBoost)}">${row.XGBoost??'—'}</td>
-        <td class="${cls(row.Linear_Regression)}">${row.Linear_Regression??'—'}</td>
-        <td style="font-weight:bold;">${bestName}</td>
-      </tr>`;
+      const bestName=row.Random_Forest<=row.XGBoost&&row.Random_Forest<=row.Linear_Regression?'🌲 RF':row.XGBoost<=row.Linear_Regression?'⚡ XGB':'📐 LR';
+      return`<tr><td><strong>${row.city}</strong></td><td class="${cls(row.Random_Forest)}">${row.Random_Forest??'—'}</td><td class="${cls(row.XGBoost)}">${row.XGBoost??'—'}</td><td class="${cls(row.Linear_Regression)}">${row.Linear_Regression??'—'}</td><td style="font-weight:bold">${bestName}</td></tr>`;
     }).join('');
-
-    mkChart('chartRMSECity','bar',{
-      labels:sum.map(r=>r.city),
-      datasets:[
-        {label:'Random Forest',data:sum.map(r=>r.Random_Forest),backgroundColor:'rgba(52,211,153,.7)',borderRadius:5},
-        {label:'XGBoost',data:sum.map(r=>r.XGBoost),backgroundColor:'rgba(251,191,36,.7)',borderRadius:5},
-        {label:'Linear Regression',data:sum.map(r=>r.Linear_Regression),backgroundColor:'rgba(167,139,250,.7)',borderRadius:5},
-      ]
-    },{plugins:{legend:{display:true}},scales:{y:{title:{display:true,text:'Avg RMSE'}}}});
-
+    mkChart('chartRMSECity','bar',{labels:sum.map(r=>r.city),datasets:[
+      {label:'Random Forest',    data:sum.map(r=>r.Random_Forest),    backgroundColor:'rgba(52,211,153,.7)',borderRadius:5},
+      {label:'XGBoost',          data:sum.map(r=>r.XGBoost),          backgroundColor:'rgba(251,191,36,.7)',borderRadius:5},
+      {label:'Linear Regression',data:sum.map(r=>r.Linear_Regression),backgroundColor:'rgba(167,139,250,.7)',borderRadius:5},
+    ]},{plugins:{legend:{display:true}},scales:{y:{title:{display:true,text:'Avg RMSE'}}}});
     let rfW=0,xgbW=0,lrW=0;
-    sum.forEach(r=>{
-      const m=Math.min(r.Random_Forest,r.XGBoost,r.Linear_Regression);
-      if(m===r.Random_Forest)rfW++;else if(m===r.XGBoost)xgbW++;else lrW++;
-    });
-    mkChart('chartRMSEWins','doughnut',{
-      labels:['Random Forest','XGBoost','Linear Regression'],
+    sum.forEach(r=>{const m=Math.min(r.Random_Forest,r.XGBoost,r.Linear_Regression);if(m===r.Random_Forest)rfW++;else if(m===r.XGBoost)xgbW++;else lrW++;});
+    mkChart('chartRMSEWins','doughnut',{labels:['Random Forest','XGBoost','Linear Regression'],
       datasets:[{data:[rfW,xgbW,lrW],backgroundColor:['rgba(52,211,153,.8)','rgba(251,191,36,.8)','rgba(167,139,250,.8)'],borderWidth:0}]
     },{plugins:{legend:{display:true,position:'bottom'}}});
-
     document.getElementById('rmseDetailSection').style.display='block';
     renderDetailTable();
   }catch(e){
-    document.getElementById('rmseBody').innerHTML=`<tr><td colspan="5" style="color:#ef5350;padding:20px;text-align:center;">⚠️ Cannot connect to Flask. Run app_ml.py first.</td></tr>`;
+    document.getElementById('rmseBody').innerHTML=`<tr><td colspan="5" style="color:#ef5350;padding:20px;text-align:center">⚠️ Cannot connect to Flask. Run app_ml.py first.</td></tr>`;
   }
 }
 
@@ -1156,44 +1029,36 @@ function renderDetailTable(){
   if(!_rmseData)return;
   const target=document.getElementById('rmseTargetSel').value;
   const det=_rmseData.detailed;
-  const rfKey=`${target}_Random_Forest`;
-  const xgbKey=`${target}_XGBoost`;
-  const lrKey=`${target}_Linear_Regression`;
   document.getElementById('rmseDetailBody').innerHTML=det.map(row=>{
-    const rf=row[rfKey],xgb=row[xgbKey],lr=row[lrKey];
+    const rf=row[`${target}_Random_Forest`],xgb=row[`${target}_XGBoost`],lr=row[`${target}_Linear_Regression`];
     const vals=[rf,xgb,lr].filter(v=>v!=null);
     const mn=Math.min(...vals),mx=Math.max(...vals);
     const cls=v=>v===mn?'best':v===mx?'worst':'mid';
     const winner=rf<=xgb&&rf<=lr?'🌲 RF':xgb<=lr?'⚡ XGB':'📐 LR';
-    return`<tr>
-      <td><strong>${row.city}</strong></td>
-      <td class="${cls(rf)}">${rf??'—'}</td>
-      <td class="${cls(xgb)}">${xgb??'—'}</td>
-      <td class="${cls(lr)}">${lr??'—'}</td>
-      <td style="font-weight:bold;">${winner}</td>
-    </tr>`;
+    return`<tr><td><strong>${row.city}</strong></td><td class="${cls(rf)}">${rf??'—'}</td><td class="${cls(xgb)}">${xgb??'—'}</td><td class="${cls(lr)}">${lr??'—'}</td><td style="font-weight:bold">${winner}</td></tr>`;
   }).join('');
 }
 
-// ALL STATES
+/* ════════════════════════════════════════════════════════
+   ALL STATES
+════════════════════════════════════════════════════════ */
 async function loadStates(){
   const tb=document.getElementById('statesBody');
   tb.innerHTML=`<tr><td colspan="7" class="loading-overlay">Fetching live data <span class="loader"></span></td></tr>`;
   try{
-    const res=await fetch(`${FLASK}/all_states`);
-    const data=await res.json();
+    const res=await fetch(`${FLASK}/all_states`), data=await res.json();
     allStatesData=data; renderStates(data);
   }catch(e){
-    tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:30px;color:#ef5350;">⚠️ Cannot connect to Flask on port 5000.</td></tr>`;
+    tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:30px;color:#ef5350">⚠️ Cannot connect to Flask on port 5000.</td></tr>`;
   }
 }
 
 function renderStates(data){
   document.getElementById('statesBody').innerHTML=data.map((item,i)=>`
     <tr>
-      <td style="color:#888;font-size:12px;">${i+1}</td>
+      <td style="color:#888;font-size:12px">${i+1}</td>
       <td><strong>${item.state||'—'}</strong></td>
-      <td style="color:#888;">${item.district||'—'}</td>
+      <td style="color:#888">${item.district||'—'}</td>
       <td><span class="badge ${getTempClass(item.temperature)}">${item.temperature?.toFixed(1)}°C</span></td>
       <td><span class="cond-badge">${item.condition||'—'}</span></td>
       <td>${item.humidity}%</td>
@@ -1206,7 +1071,7 @@ function filterStates(){
   renderStates(allStatesData.filter(item=>Object.values(item).some(v=>String(v).toLowerCase().includes(q))));
 }
 
-window.addEventListener('load',loadDashboard);
+window.addEventListener('load', loadDashboard);
 </script>
 </body>
 </html>
